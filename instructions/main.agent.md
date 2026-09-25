@@ -19,3 +19,9 @@ Each entry below is an instruction file with a one-line description. Optional su
 - [`./instructions/generate-summary-content.agent.md`](./generate-summary-content.agent.md) — assemble the Markdown sprint/release summary content (exec summary, metrics, completed/carried-over tables, risks, appendix) from fetched Jira sprint data.
   + Keywords: summary content generation, sprint summary, executive summary, velocity metrics, completed work table, risks blockers, appendix
   + Target: `scripts/generate_sprint_summary.py`
+- [`./instructions/calculate-compound-interest.agent.md`](./calculate-compound-interest.agent.md) — when and how to invoke `tools/compound_interest.py` and present its results.
+  + Keywords: compound interest, final amount, interest earned, principal, annual rate, compounding
+  + Target: `tools/compound_interest.py`
+- [`./instructions/fetch.data.agent.md`](./fetch.data.agent.md) — when and how to invoke `tools/fetch_data.py` to pull Jira sprint data and present results.
+  + Keywords: fetch jira data, sprint data, sprint issues, fetch_data.py
+  + Target: `tools/fetch_data.py`
