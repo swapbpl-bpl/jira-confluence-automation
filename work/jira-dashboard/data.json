@@ -1,0 +1,23 @@
+{
+  "sprint": {
+    "name": "Sprint 24",
+    "team": "Phoenix Squad",
+    "startDate": "2026-09-15",
+    "endDate": "2026-09-26",
+    "today": "2026-09-24"
+  },
+  "issues": [
+    { "id": "PHX-101", "title": "Set up CI pipeline for backend service", "status": "Done", "points": 5, "assignee": "Ava Chen", "flagged": false },
+    { "id": "PHX-102", "title": "Design sprint dashboard schema", "status": "Done", "points": 3, "assignee": "Marcus Lee", "flagged": false },
+    { "id": "PHX-103", "title": "Implement login rate limiting", "status": "Done", "points": 8, "assignee": "Priya Nair", "flagged": false },
+    { "id": "PHX-104", "title": "Fix flaky checkout integration test", "status": "In Review", "points": 3, "assignee": "Ava Chen", "flagged": false },
+    { "id": "PHX-105", "title": "Add pagination to orders API", "status": "In Progress", "points": 5, "assignee": "Marcus Lee", "flagged": false },
+    { "id": "PHX-106", "title": "Investigate payment webhook timeout", "status": "In Progress", "points": 8, "assignee": "Priya Nair", "flagged": true },
+    { "id": "PHX-107", "title": "Migrate legacy config to new format", "status": "To Do", "points": 5, "assignee": "Sam Okafor", "flagged": false },
+    { "id": "PHX-108", "title": "Write docs for notification service", "status": "To Do", "points": 2, "assignee": "Sam Okafor", "flagged": false },
+    { "id": "PHX-109", "title": "Upgrade dependency causing build failures", "status": "To Do", "points": 3, "assignee": "Ava Chen", "flagged": true },
+    { "id": "PHX-110", "title": "Refactor cart total calculation", "status": "In Progress", "points": 5, "assignee": "Marcus Lee", "flagged": false },
+    { "id": "PHX-111", "title": "Add retry logic for email delivery", "status": "To Do", "points": 3, "assignee": "Priya Nair", "flagged": false },
+    { "id": "PHX-112", "title": "Spike: evaluate feature flag providers", "status": "In Review", "points": 2, "assignee": "Sam Okafor", "flagged": false }
+  ]
+}

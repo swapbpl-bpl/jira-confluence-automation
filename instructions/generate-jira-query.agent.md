@@ -1,0 +1,7 @@
+- Ask for (or infer from context) the reporting scenario before writing JQL: e.g. sprint blockers, stale issues, overdue items, team workload.
+- Generate a single JQL query per scenario, wrapped in a ```jql code block.
+- Prefer standard fields (`project`, `sprint`, `status`, `assignee`, `flagged`, `updated`, `duedate`) over custom field IDs unless the user specifies a custom field.
+- Use `ORDER BY` to keep results useful (e.g. `updated ASC` for stale-issue queries).
+- Add a one-line comment above the query explaining what it returns.
+- Do not fabricate project keys, board IDs, or custom field IDs — use placeholders like `<PROJECT_KEY>` if unknown.
+- Common scenarios to support: flagged/blocked issues, issues with no status change in N days, issues due this week, open issues by assignee.

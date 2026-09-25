@@ -1,0 +1,26 @@
+# Environment variables
+.env
+JIRA_API_Token = ATATT3xFfGF0n0ad6iNTUYK_qqY_g-CxBwwm3WnE0UgtYAWAAuvBqXPGZd5B4N8HvQKCyU78on3jqjS6iioUfu92X5UaUoW5el_WaY55kSJcKJ_Q_Y3d5io983YChj0I8nJx0HqPMBPsPqYcThXg-gpsIc_qitUj5nNqd40H08uVmSozxmTeFGE=45D98F86
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Testing / caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/

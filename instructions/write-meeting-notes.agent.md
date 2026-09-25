@@ -1,0 +1,7 @@
+- Read all provided meeting notes/transcript before summarizing.
+- Produce a Markdown summary with these sections only: `## Summary`, `## Decisions`, `## Action Items`.
+- `## Action Items` must be a table with columns: Owner, Action, Due Date.
+- Use bullet points for `## Summary` and `## Decisions` — no prose paragraphs.
+- Only include decisions/actions explicitly stated or clearly implied in the notes — do not invent owners or dates.
+- Keep tone neutral and factual, no fluff words.
+- If no owner or due date is stated for an action item, write `TBD` rather than guessing.

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprint Progress Dashboard</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div>
+      <h1 id="sprint-title">Sprint Progress Dashboard</h1>
+      <p id="sprint-meta" class="muted"></p>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="card stats">
+      <h2>Sprint Summary</h2>
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-value" id="stat-total">-</span>
+          <span class="stat-label">Total points</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="stat-done">-</span>
+          <span class="stat-label">Completed points</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="stat-percent">-</span>
+          <span class="stat-label">% complete</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="stat-days">-</span>
+          <span class="stat-label">Days remaining</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Burndown</h2>
+      <canvas id="burndown-chart"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>Status Breakdown</h2>
+      <canvas id="status-chart"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>Blockers &amp; Flagged Issues</h2>
+      <ul id="blockers-list" class="blockers-list"></ul>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
