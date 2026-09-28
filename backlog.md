@@ -11,28 +11,28 @@ Derived from [project_spec.md](project_spec.md). Phasing reflects the following 
 ## Phase 1: Setup
 
 ### 1.1 Resolve Open Items (blocking — do first)
-- [ ] Confirm Jira Cloud vs Server/Data Center for the Staff Augment Project (determines API version/auth).
-- [ ] Obtain Jira project key for the Staff Augment Project.
-- [ ] Obtain Jira board ID to pull sprints from.
-- [ ] Obtain Confluence space key for sprint summary pages.
-- [ ] Obtain Confluence parent page ID under which new sprint pages will be created.
-- [ ] Define the "stale/blocked" threshold for the risks section (e.g., no status change in N business days) and confirm N.
-- [ ] Confirm whether Jira's native "Flagged" field, a label, or both should be used to detect flagged issues.
+- [ ] Confirm Jira Cloud vs Server/Data Center for the Staff Augment Project (determines API version/auth). (GitHub issue #1)
+- [ ] Obtain Jira project key for the Staff Augment Project. (GitHub issue #7)
+- [ ] Obtain Jira board ID to pull sprints from. (GitHub issue #4)
+- [ ] Obtain Confluence space key for sprint summary pages. (GitHub issue #6)
+- [ ] Obtain Confluence parent page ID under which new sprint pages will be created. (GitHub issue #3)
+- [ ] Define the "stale/blocked" threshold for the risks section (e.g., no status change in N business days) and confirm N. (GitHub issue #5)
+- [ ] Confirm whether Jira's native "Flagged" field, a label, or both should be used to detect flagged issues. (GitHub issue #2)
 
 ### 1.2 Project scaffolding
-- [ ] Create `scripts/generate_sprint_summary.py` stub with CLI arg parsing (`--sprint`) following conventions in `scripts/generate_stakeholder_report.py`.
-- [ ] Create `scripts/publish_sprint_summary.py` stub with CLI arg parsing (`--draft`).
-- [ ] Ensure `stakeholder-reports/` directory exists (or is created at runtime) for generated drafts.
-- [ ] Add `python-dotenv` (or equivalent) and `requests` to `requirements.txt`.
-- [ ] Create `.env.example` listing all required variables from spec §8 with placeholder values (no secrets).
-- [ ] Add `.env` to `.gitignore` (verify it isn't already committed).
+- [ ] Create `scripts/generate_sprint_summary.py` stub with CLI arg parsing (`--sprint`) following conventions in `scripts/generate_stakeholder_report.py`. (GitHub issue #13)
+- [ ] Create `scripts/publish_sprint_summary.py` stub with CLI arg parsing (`--draft`). (GitHub issue #9)
+- [ ] Ensure `stakeholder-reports/` directory exists (or is created at runtime) for generated drafts. (GitHub issue #12)
+- [ ] Add `python-dotenv` (or equivalent) and `requests` to `requirements.txt`. (GitHub issue #8)
+- [ ] Create `.env.example` listing all required variables from spec §8 with placeholder values (no secrets). (GitHub issue #10)
+- [ ] Add `.env` to `.gitignore` (verify it isn't already committed). (GitHub issue #11)
 
 ### 1.3 Credentials & connectivity
-- [ ] Generate a least-privilege Jira API token (read-only, if scoping is supported).
-- [ ] Generate a least-privilege Confluence API token (page-create/edit only, if scoping is supported).
-- [ ] Populate a local `.env` (git-ignored) with real values for dev/testing.
-- [ ] Write a small connectivity smoke-check (manual script or REPL snippet) to confirm Jira Basic Auth works against the configured board.
-- [ ] Write a small connectivity smoke-check to confirm Confluence Basic Auth works against the configured space/parent page.
+- [ ] Generate a least-privilege Jira API token (read-only, if scoping is supported). (GitHub issue #14)
+- [ ] Generate a least-privilege Confluence API token (page-create/edit only, if scoping is supported). (GitHub issue #15)
+- [ ] Populate a local `.env` (git-ignored) with real values for dev/testing. (GitHub issue #16)
+- [ ] Write a small connectivity smoke-check (manual script or REPL snippet) to confirm Jira Basic Auth works against the configured board. (GitHub issue #17)
+- [ ] Write a small connectivity smoke-check to confirm Confluence Basic Auth works against the configured space/parent page. (GitHub issue #18)
 
 ---
 
