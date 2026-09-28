@@ -33,7 +33,7 @@ Build in vertical slices with mocked Atlassian services first. Start work that i
 - Update `spec/specification.md` with decisions, acceptance criteria, and any revised scope; update `spec/clarify.md` to mark resolved items with decision references.
 - Assign the feature branch and replace `TBD` metadata when implementation is scheduled.
 
-**Exit criteria**: No unresolved P0 decision affects security, report correctness, audience visibility, or publish behavior. Product owner approves the revised requirements and V1 sprint-only (or explicitly expanded) scope.
+**Exit criteria**: No unresolved P0 decision affects security, report correctness, audience visibility, or publish behavior. Product owner approves the revised requirements and V1 closed-sprint-only scope; release/version reporting remains deferred unless separately specified.
 
 ## Phase 1 - Application and Environment Foundation
 
@@ -176,6 +176,6 @@ Build in vertical slices with mocked Atlassian services first. Start work that i
 ## Explicitly Excluded from This Plan
 
 - Scheduled or webhook-triggered generation/publication.
-- Release/version reporting unless Phase 0 expands V1 and updates acceptance criteria.
+- Release/version reporting; deferred unless a separate scope update defines data, selection, metrics, and acceptance criteria.
 - Slack/email notifications and multi-project aggregation.
 - Production credentials or production Confluence writes in routine development and CI.

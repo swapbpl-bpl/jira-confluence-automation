@@ -21,10 +21,12 @@
 - **Milestone**: M0
 - **Depends on**: None
 - **Specification**: Summary; FR-015, FR-026; Out of Scope for V1
+- **Decision**: V1 supports closed Jira sprints only. Release/version reporting is deferred until a separate scope update defines its selection, source data, metrics, and acceptance criteria. This follows the existing V1 non-goal and sprint-only user workflows.
+- **Status**: Complete
 - **Acceptance criteria**:
-  - Product owner records whether V1 supports closed sprints only or explicitly includes release/version reports.
-  - If V1 is sprint-only, release references are removed or clearly marked future scope in the feature spec.
-  - If releases are included, selection, data source, metrics, report sections, and acceptance scenarios are added before implementation tasks are unblocked.
+  - The feature spec identifies closed Jira sprints as the only V1 report period.
+  - Required V1 report sections and page title requirements use sprint terminology.
+  - Release/version reporting is explicitly marked out of scope and requires a separate scope update before implementation.
 
 ### T002 - Decide identity and audience access
 

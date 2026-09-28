@@ -3,11 +3,13 @@
 - **Feature Branch**: `TBD`
 - **Created**: 2026-09-28
 - **Status**: Draft
-**Input**: Generate a sprint/release summary from Jira and publish a reviewed summary to Confluence, based on `project_spec.md` and governed by `spec/constitution.md`.
+**Input**: Generate a summary from a completed Jira sprint and publish a reviewed summary to Confluence, based on `project_spec.md` and governed by `spec/constitution.md`.
 
 ## Summary
 
 Provide a web application for a Project Manager to select a completed Jira sprint, generate a stakeholder-ready summary with an internal issue-level appendix, review and edit the draft, and explicitly publish it as a new child page in Confluence. Generation and publication are separate actions. The application retains report drafts and publication metadata so the workflow is traceable and failed or repeated requests do not silently lose work or create duplicate pages.
+
+V1 supports closed Jira sprints only. Release/version reporting is deferred until its selection flow, source data, metrics, and acceptance criteria are defined in a separate scope update.
 
 The constitution's required stack governs this feature: React 18 with Vite, Node.js with Express, and PostgreSQL 15 via Docker. This replaces the Python CLI implementation described in the older project specification; this feature is a browser-based workflow backed by server APIs.
 
@@ -113,7 +115,7 @@ As a Project Manager, I want to find drafts and previously published summaries s
 
 ### Draft and Report Content
 
-- **FR-015**: The system MUST generate a Markdown report with sections in this order: sprint/release metadata; executive summary; velocity and points metrics; completed work; carried-over or incomplete work; risks and blockers; detailed appendix.
+- **FR-015**: The system MUST generate a Markdown report with sections in this order: sprint metadata; executive summary; velocity and points metrics; completed work; carried-over or incomplete work; risks and blockers; detailed appendix.
 - **FR-016**: The executive summary MUST use plain language and MUST omit issue keys and technical jargon. Issue-level details MUST remain in the detailed appendix.
 - **FR-017**: The report MUST include committed points, completed points, and completion percentage when source data permits.
 - **FR-018**: The completed-work table MUST include issue key, summary, type, and points when available. The incomplete-work table MUST identify issues not completed at sprint close. Risk entries MUST include an available reason.
@@ -127,7 +129,7 @@ As a Project Manager, I want to find drafts and previously published summaries s
 - **FR-023**: The system MUST require an explicit user confirmation immediately before creating a Confluence page and MUST display the destination, title, and content to be published.
 - **FR-024**: The system MUST convert the reviewed Markdown into the Confluence representation required by the configured Confluence API.
 - **FR-025**: The system MUST create a new child page under the configured parent page in the configured space; it MUST NOT overwrite a previously published report page.
-- **FR-026**: The page title MUST follow `<Project Name> - <Sprint or Release Name> Summary` unless the project configures an equivalent title convention.
+- **FR-026**: The page title MUST follow `<Project Name> - <Sprint Name> Summary` unless the project configures an equivalent title convention.
 - **FR-027**: The system MUST record publication status, page title, page URL when available, publication time, and the draft version used for the publish attempt.
 - **FR-028**: A retry of one publish operation MUST be idempotent or otherwise checked against its operation identity so transient failures do not create unintended duplicate pages. A separate, newly confirmed publish action MAY create a new page.
 - **FR-029**: The system MUST provide a report history view that distinguishes drafts, failed attempts, and successful publications.
@@ -167,7 +169,7 @@ As a Project Manager, I want to find drafts and previously published summaries s
 - Next-sprint or look-ahead analysis.
 - Slack or email notifications.
 - Aggregation across multiple Jira projects, boards, or teams.
-- Separate release/version reporting until its source data, selection flow, and metrics are defined.
+- Release/version reporting; deferred until its source data, selection flow, metrics, and acceptance criteria are defined.
 
 ## Dependencies and Constraints
 
@@ -186,7 +188,7 @@ As a Project Manager, I want to find drafts and previously published summaries s
 | Stale/blocked threshold | Open | Define the number of days and whether calendar or business days are counted. |
 | Flagged issue detection | Open | Confirm whether to use Jira's native Flagged field, a label, or both. |
 | Historical sprint status | Open | Confirm that Jira history/API permissions provide issue status at sprint close; define the visible limitation when unavailable. |
-| Release reporting | Deferred | Define release selection, completion rules, and metrics before including release reports in V1. |
+| Release reporting | Resolved for V1 | V1 supports closed Jira sprints only; release/version reporting remains out of scope pending a separate scope update with selection, data, metrics, and acceptance criteria. |
 | Configuration administration | Open | Decide whether deployment settings are environment-only or editable by an authorized administrator in the UI. |
 
 ## Constitution Check

@@ -64,13 +64,13 @@ Cloud versus Server/Data Center is unresolved, and Confluence deployment/authent
 
 ## P1 - Resolve Before Detailed Design
 
-### 8. Release reporting is both implied and deferred
+### 8. Release reporting is deferred outside V1
 
 **References**: Summary; FR-015, FR-026; Out of Scope for V1; constitution principle “Human-Controlled Publishing”.
 
-The specification repeatedly refers to sprint/release metadata and a sprint or release title, while V1 explicitly defers separate release/version reporting. The constitution requires any sprint or release summary that is supported to publish as a new page. It is unclear whether V1 is sprint-only or has a partially supported release mode.
+V1 is defined as closed-sprint-only. Release/version reporting remains deferred until a separate scope update defines its selection, data, metrics, and acceptance criteria. The feature requirements and title convention now refer only to sprints for V1; the constitution's new-page rule will apply if release reporting is later added.
 
-**Clarify**: State that V1 accepts only Jira sprints and remove release wording from V1 requirements, or define release selection, included Jira data, metrics, acceptance scenarios, and report behavior. Preserve the new-page rule for every supported report type.
+**Resolution**: No release/version reporting is included in V1. If added later, define its separate workflow and metrics, then apply the constitution's new-page rule to that report type.
 
 ### 9. Publish retry idempotency and ambiguous outcomes lack a mechanism
 
