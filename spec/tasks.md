@@ -1,612 +1,360 @@
-# Implementation Tasks: Sprint Summary and Confluence Publishing
+# Implementation Tasks: Staff Augmentation Sprint Dashboard
 
-- **Source plan**: `spec/plan.md`
-- **Feature specification**: `spec/specification.md`
+- **Plan**: `spec/plan.md`
+- **Specification**: `spec/specification.md`
 - **Constitution**: `spec/constitution.md`
 - **Status**: Draft
-**Task status convention**: All tasks begin as `Not started`; do not start a task whose decision or prerequisite dependencies are unresolved.
+- **Task status convention**: All tasks begin as `Not started`.
 
 ## Task Rules
 
-- Task IDs are stable references; do not renumber tasks after work begins. Add new IDs at the end of the relevant phase or update references deliberately.
-- Acceptance criteria are required for completion. Link implementation changes, tests, and decisions to these task IDs.
-- `Depends on: None` means the task can start without another task in this list; it does not waive product/security review.
-- Tasks that depend on unresolved Phase 0 decisions remain blocked until those decisions are recorded in `spec/specification.md`.
-- External-service tests use mocks by default. Live integration is restricted to a deliberate non-production sandbox run.
+- Task IDs are stable; append new IDs rather than reusing completed IDs.
+- A task is complete only when every listed acceptance criterion is met and relevant test evidence is recorded.
+- Tasks within Phase 3 are vertical feature slices. Complete the domain/API/UI/tests for one feature before starting the next feature.
+- Do not start application implementation until T001 exact-version pins are committed and verified.
+- Keep the prototype loopback-only and fictional-data-only. Do not add live Jira, authentication, remote hosting, or credentials.
+- Blocked state is derived only from `flagged`; priority `Blocker` is not a blocker rule. AES secret encryption is not needed for mock-only phase one.
 
-## Phase 0 - Resolve Product and Data Decisions
+## Phase 1: Backend Setup (Database and API Skeleton)
 
-### T001 - Confirm V1 reporting scope
+### T001 - Pin the required toolchain
 
-- **Milestone**: M0
-- **Depends on**: None
-- **Specification**: Summary; FR-015, FR-026; Out of Scope for V1
-- **Decision**: V1 supports closed Jira sprints only. Release/version reporting is deferred until a separate scope update defines its selection, source data, metrics, and acceptance criteria. This follows the existing V1 non-goal and sprint-only user workflows.
-- **Status**: Complete
-- **Acceptance criteria**:
-  - The feature spec identifies closed Jira sprints as the only V1 report period.
-  - Required V1 report sections and page title requirements use sprint terminology.
-  - Release/version reporting is explicitly marked out of scope and requires a separate scope update before implementation.
-
-### T002 - Decide identity and audience access
-
-- **Milestone**: M0
-- **Depends on**: None
-- **Specification**: User Stories 1, 3, 4, 5; FR-003, FR-023; constitution principles 1, 2, and 4
-- **Acceptance criteria**:
-  - The deployment model is recorded as either private single-user or authenticated multi-user.
-  - Allowed roles/actions are specified for configuration, viewing, editing, importing, and publishing.
-  - The visibility of issue-level appendix content is explicitly approved or a separation/redaction policy is specified.
-  - The approved rules are added to the feature spec and cover attribution/auditing for publication actions.
-
-### T003 - Confirm Atlassian platforms and authentication
-
-- **Milestone**: M0
-- **Depends on**: None
-- **Specification**: FR-003 through FR-007; Clarifications Needed: Jira deployment
-- **Acceptance criteria**:
-  - Jira and Confluence deployment types and API versions are recorded independently.
-  - Authentication methods and least-privilege permissions are documented for both services.
-  - Required non-secret configuration values and secret-provisioning/rotation expectations are specified.
-  - The configuration and adapter design can be tested without live credentials.
-
-### T004 - Define historical sprint and metric rules
-
-- **Milestone**: M0
-- **Depends on**: T003
-- **Specification**: FR-010, FR-011, FR-013, FR-014, FR-017, FR-018; SC-003
-- **Acceptance criteria**:
-  - The authoritative source and as-of rule for sprint membership and status at close are documented.
-  - Rules cover issues added/removed after close, reopened issues, estimates changed after commitment, and unavailable changelog data.
-  - The estimation field, included issue types, commitment cutoff, completed-point numerator, denominator, rounding, and missing-estimate behavior are specified.
-  - At least one example dataset and expected classification/metric result are recorded for tests.
-
-### T005 - Define risk, date, and incomplete-data policies
-
-- **Milestone**: M0
-- **Depends on**: T003, T004
-- **Specification**: FR-012, FR-014, FR-018; SC-003
-- **Acceptance criteria**:
-  - Flag detection mechanism and qualifying values are defined.
-  - Stale threshold, calendar/business-day basis, timezone, timestamp, and evaluation date are defined.
-  - Duplicate risk causes and user-visible reasons have an explicit rendering rule.
-  - The spec states when incomplete Jira data blocks publication versus permits it with an explicit warning/override.
-
-### T006 - Select executive-summary generation method
-
-- **Milestone**: M0
-- **Depends on**: T002, T004
-- **Specification**: Summary; FR-016; SC-002
-- **Acceptance criteria**:
-  - The method is selected as deterministic generation or an approved LLM-based approach.
-  - If an LLM is selected, provider/model, allowed data, privacy constraints, grounding/validation, failure behavior, and cost/availability expectations are recorded.
-  - The rules prevent unsupported facts and preserve missing-data indicators for reviewer visibility.
-  - The chosen method is reflected in the feature spec and test examples.
-
-### T007 - Define configuration, draft lifecycle, and retention
-
-- **Milestone**: M0
-- **Depends on**: T002
-- **Specification**: FR-004, FR-005, FR-019 through FR-021, FR-027, FR-029; Key Entities
-- **Acceptance criteria**:
-  - Configuration ownership is decided: deployment-time environment settings or authorized administration UI.
-  - Draft identity, regeneration behavior, revision creation, immutable published revisions, stale/concurrent edit behavior, and imported-file matching are specified.
-  - Persisted Jira fields, retention/deletion, report snapshot behavior, and access expectations are documented.
-  - The feature spec defines how generation, draft, review, failed publish, and published states relate.
-
-### T008 - Define Markdown and publish recovery behavior
-
-- **Milestone**: M0
-- **Depends on**: T002, T003, T007
-- **Specification**: FR-020 through FR-028; SC-004 through SC-006
-- **Acceptance criteria**:
-  - Supported Markdown, safe rendering/sanitization, unsupported syntax, and confirmation-preview fidelity are specified.
-  - The page-title convention and title-collision behavior are decided.
-  - Publish operation identity, retry/idempotency, uncertain remote outcomes, reconciliation, and recovery after database failure are defined.
-  - A new intentional republish is distinguishable from retrying an existing operation.
-
-### T009 - Baseline approved requirements and metadata
-
-- **Milestone**: M0
-- **Depends on**: T001 through T008
-- **Specification**: All open clarifications; Constitution Check
-- **Acceptance criteria**:
-  - Accepted decisions are incorporated into `spec/specification.md` with testable acceptance criteria.
-  - Resolved items in `spec/clarify.md` link to the corresponding decision or updated requirement.
-  - V1 scope and product/security approval are recorded; no P0 item remains open for dependent implementation.
-  - Feature branch and status metadata are updated when implementation is scheduled.
-
-## Phase 1 - Application and Environment Foundation
-
-### T010 - Establish JavaScript workspace and toolchain
-
+- **Description**: Select and record exact compatible versions for the frontend, backend, database image, and container tooling before any application implementation begins.
 - **Milestone**: M1
-- **Depends on**: T009
-- **Specification**: FR-001; plan Phase 1
+- **Dependencies**: None
+- **Specification**: Constitution: Technology and Operational Constraints; Plan Phase 1
+- **Status**: Not started
 - **Acceptance criteria**:
-  - A package manager, supported Node.js runtime, workspace layout, and dependency version policy are documented and configured.
-  - Root scripts provide consistent install, development, build, test, lint, and typecheck entry points.
-  - Existing Python tooling remains intact unless a separate approved change says otherwise.
+  - Exact React, Vite, Node.js, Express, PostgreSQL image, Docker Engine, and Docker Compose versions are selected within constitutional compatibility baselines.
+  - The exact Node version is recorded in `.node-version` or `.nvmrc`; JavaScript dependencies are exact-pinned in manifests and a committed lockfile.
+  - Docker Compose uses an exact PostgreSQL patch tag and image digest; Docker/Compose tool versions are recorded in checked-in toolchain or development-container configuration.
+  - A clean CI job verifies all pins. No later task starts if a required pin is missing.
 
-### T011 - Bootstrap React and Vite application
+### T002 - Bootstrap backend workspace and API skeleton
 
+- **Description**: Create the TypeScript Express workspace, shared contract package, server composition, and foundational API structure.
 - **Milestone**: M1
-- **Depends on**: T010
-- **Specification**: FR-001
+- **Dependencies**: T001
+- **Specification**: Constitution: Repository Structure and Coding Standards; Plan Phase 1
+- **Status**: Not started
 - **Acceptance criteria**:
-  - `apps/web` runs React 18 through Vite using the agreed TypeScript/build conventions.
-  - The application has a minimal renderable entry point and a documented local start command.
-  - The production build succeeds without exposing server credentials or secrets in browser assets.
+  - `apps/api` has a pinned Node/Express TypeScript package with the required config, middleware, routes, services, repositories, and `server.ts` organization.
+  - `packages/contracts` has shared request/response and error schemas/types.
+  - Express binds only to `127.0.0.1`, parses JSON safely, and has a common non-sensitive error boundary.
+  - Root scripts can install, build, typecheck, lint, and test the API workspace using locked dependencies.
 
-### T012 - Bootstrap Express API application
+### T003 - Add PostgreSQL Docker service
 
+- **Description**: Configure the pinned PostgreSQL service for reproducible, loopback-only local development.
 - **Milestone**: M1
-- **Depends on**: T010
-- **Specification**: FR-001, FR-002
+- **Dependencies**: T001
+- **Specification**: FR-019, FR-025, SC-001; Constitution: Technology and Operational Constraints
+- **Status**: Not started
 - **Acceptance criteria**:
-  - `apps/api` starts an Express server with a consistent error boundary and JSON response conventions.
-  - Server startup fails clearly on invalid required settings without printing secret values.
-  - The API can be built/tested from the root workspace scripts.
+  - Docker Compose starts the pinned PostgreSQL 15 image with a health check and persistent local development storage.
+  - Database network exposure is local-only; credentials are loaded from server-side environment configuration and are not committed or Vite-exposed.
+  - Documented start/stop commands work from a clean checkout.
 
-### T013 - Establish shared API contracts
+### T004 - Create migrations for dashboard entities
 
+- **Description**: Add versioned PostgreSQL migrations and integrity constraints for the dashboard's project, sprint, team, issue, scope-change, and burndown data.
 - **Milestone**: M1
-- **Depends on**: T010
-- **Specification**: Constitution: Explicit Application Boundaries and Development Workflow
+- **Dependencies**: T002, T003
+- **Specification**: Data Model; FR-001, FR-004, FR-006, FR-023; Constitution: versioned migrations
+- **Status**: Not started
 - **Acceptance criteria**:
-  - `packages/contracts` publishes shared, versionable request/response and error types or schemas.
-  - Frontend and API consume the same contract definitions rather than maintaining duplicate shapes.
-  - Contract checks run in CI and reject incompatible changes without an explicit version/update path.
+  - Versioned migrations create `teams`, `projects`, `team_members`, `sprints`, `sprint_scope_changes`, `issues`, and `burndown_snapshots` with the specified types and foreign keys.
+  - Constraints enforce supported statuses, non-negative point values, unique issue/sprint keys, unique project sprint keys, and at most one active sprint per project.
+  - A clean database applies migrations successfully; migration verification runs in CI.
+  - Runtime API has no create/update/delete endpoints for these records.
 
-### T014 - Add PostgreSQL 15 Docker development service
+### T005 - Implement atomic fictional seed and reset
 
+- **Description**: Create and validate the fictional 10-person sprint fixture and provide a transactional seed/reset path.
 - **Milestone**: M1
-- **Depends on**: T010
-- **Specification**: FR-001; Constitution: Technology and Operational Constraints
+- **Dependencies**: T004
+- **Specification**: Data Model and Derived Values; FR-001, FR-008, SC-002
+- **Status**: Not started
 - **Acceptance criteria**:
-  - A documented Docker workflow starts PostgreSQL 15 with a health check and persistent local development storage.
-  - Application configuration connects to the service without embedding credentials in source or browser code.
-  - A clean local start and stop procedure is documented.
+  - Seed data contains exactly one Staff Augment project, one team with 10 active members, one active sprint, the four supported statuses, and fictional issues/scope changes/burndown snapshots.
+  - Seed data covers missing estimates, unassigned issues, flagged/unflagged issues, members with no work, and scope additions/removals.
+  - The original commitment, scope ledger, current issue estimates, completed points, and latest burndown value reconcile under the specified formulas.
+  - Seed validation rejects unsupported statuses, multiple active sprints/projects, missing snapshots, and inconsistent totals before changes are committed.
+  - Reset/reseed replaces the fixture atomically; a failed seed leaves the prior database state intact.
 
-### T015 - Add versioned migration tooling
+### T006 - Define dashboard API contracts and health endpoint
 
+- **Description**: Define shared health/dashboard schemas and implement the API readiness endpoint plus dashboard route boundaries.
 - **Milestone**: M1
-- **Depends on**: T014
-- **Specification**: Constitution: Testable Changes and Technology Constraints
+- **Dependencies**: T002, T004
+- **Specification**: API Contracts; FR-018, FR-019, FR-021, FR-026
+- **Status**: Not started
 - **Acceptance criteria**:
-  - A migration tool and scripts are configured for PostgreSQL.
-  - A clean database can apply the initial migration path and report its migration state.
-  - Migration verification is automated; no application behavior depends on manual schema edits.
+  - Shared contracts define `GET /api/v1/health` and `GET /api/v1/dashboard`, including nullable fields, enums, freshness, errors, and all dashboard arrays.
+  - `GET /api/v1/health` returns the specified ready/not-ready payload without exposing database connection details.
+  - The dashboard route and service/repository boundaries are registered; until Phase 3 implements calculations, it MUST NOT return placeholder metrics.
+  - Contract tests verify the declared schema and error response shape.
 
-### T016 - Add health endpoints and safe environment example
+### Phase 1 Exit Gate: Backend Foundation
 
-- **Milestone**: M1
-- **Depends on**: T011, T012, T014
-- **Specification**: FR-003 through FR-005; SC-008
-- **Acceptance criteria**:
-  - API liveness/readiness behavior distinguishes process health from required dependency readiness.
-  - The web application can identify API unavailability without exposing backend configuration.
-  - `.env.example` documents required server settings with placeholders only; secret values are not committed or exposed through Vite variables.
+- T001 through T006 are complete.
+- A clean checkout can pin/install the toolchain, start PostgreSQL, apply migrations, seed data, start Express, and call the health endpoint.
+- No application feature proceeds without exact pins and a valid seed fixture.
 
-### T017 - Add continuous integration quality gates
+## Phase 2: Frontend Setup (UI Skeleton and Routing)
 
-- **Milestone**: M1
-- **Depends on**: T011 through T016
-- **Specification**: Constitution: Testable Changes; plan Phase 1
-- **Acceptance criteria**:
-  - CI installs dependencies reproducibly and runs lint, typecheck, unit tests, and production builds.
-  - CI verifies database migrations against a disposable PostgreSQL 15 service.
-  - CI requires no live Jira/Confluence credentials and performs no remote page creation.
+### T007 - Bootstrap React/Vite frontend workspace
 
-## Phase 2 - Identity, Configuration, and Atlassian Adapters
-
-### T018 - Enforce approved user access model
-
+- **Description**: Create the pinned React/Vite TypeScript application and local API proxy configuration.
 - **Milestone**: M2
-- **Depends on**: T002, T012, T013, T017
-- **Specification**: User Stories 1, 3, 4, 5; FR-002, FR-023
+- **Dependencies**: T001, T006
+- **Specification**: Architecture and Constraints; Constitution: Repository Structure and Coding Standards
+- **Status**: Not started
 - **Acceptance criteria**:
-  - The approved single-user boundary or authentication/role model is enforced on backend routes.
-  - Unauthorized users cannot read/edit drafts, change configuration, or publish.
-  - Security tests verify access controls and attribution rules without live Atlassian services.
+  - `apps/web` uses the pinned React 18/Vite versions and TypeScript conventions.
+  - Root scripts build, typecheck, lint, and test the frontend from the committed lockfile.
+  - Vite proxies `/api` to Express and binds to `127.0.0.1`.
 
-### T019 - Implement server-side configuration and secret loading
+### T008 - Add app shell and dashboard route
 
+- **Description**: Build the single-page application shell and `/` route for the local sprint dashboard.
 - **Milestone**: M2
-- **Depends on**: T003, T007, T012, T016
-- **Specification**: FR-003 through FR-006; SC-008
+- **Dependencies**: T007
+- **Specification**: UI Screens; FR-002, FR-017
+- **Status**: Not started
 - **Acceptance criteria**:
-  - Jira and Confluence settings are loaded and validated using the approved configuration ownership model.
-  - Missing or invalid settings identify the non-secret field that needs correction.
-  - Secrets are never returned to the client, written to report data, or included in logs/errors.
+  - The single route `/` renders the Staff Augmentation dashboard shell with page title, project/team context, and responsive layout regions.
+  - No sprint selector, project selector, configuration view, edit controls, or remote-access workflow is added.
+  - The page remains usable at desktop and narrow mobile viewport sizes.
 
-### T020 - Implement Jira service adapter
+### T009 - Add shared API client and UI state shell
 
+- **Description**: Connect the frontend to shared API contracts and add loading, empty, stale, and recoverable error states.
 - **Milestone**: M2
-- **Depends on**: T003, T019
-- **Specification**: FR-002, FR-005 through FR-010
+- **Dependencies**: T006, T007, T008
+- **Specification**: FR-017, FR-018, FR-021, FR-027
+- **Status**: Not started
 - **Acceptance criteria**:
-  - Jira API requests use the approved endpoint/authentication and required least-privilege credentials.
-  - Adapter methods return normalized service results and map expected authentication/not-found/rate-limit failures.
-  - Unit tests use mocked Jira responses and verify credentials are not leaked.
+  - API client consumes `packages/contracts` and validates received dashboard responses before rendering.
+  - Loading, no-active-sprint, empty-active-sprint, stale, and recoverable-error shells are present without fabricated metrics.
+  - A user-triggered Retry control is available for transient network/503 failures; no automatic retries are made.
 
-### T021 - Implement Confluence service adapter and read-only check
+### T010 - Add accessible dashboard component skeleton
 
+- **Description**: Establish accessible feature components for the dashboard's major content regions before wiring real metrics.
 - **Milestone**: M2
-- **Depends on**: T003, T019
-- **Specification**: FR-002, FR-005 through FR-007; User Story 1
+- **Dependencies**: T008, T009
+- **Specification**: UI Screens; Non-Functional Requirements; SC-008, SC-011
+- **Status**: Not started
 - **Acceptance criteria**:
-  - The adapter validates configured site/space/parent access using the approved deployment API.
-  - A connectivity/destination check is read-only and cannot create or update a page.
-  - Tests verify expected responses and safe mapping of auth, permission, and network failures.
+  - Feature-owned components/regions exist for summary, burndown, status/blockers, workload, scope changes, and issue details.
+  - Controls have labels, keyboard operation, and visible focus; chart regions have text alternatives.
+  - Status and blocked state are not conveyed by color alone; skeleton placeholders are not presented as real data.
 
-### T022 - Add bounded external request handling
+### Phase 2 Exit Gate: Frontend Shell
 
-- **Milestone**: M2
-- **Depends on**: T020, T021
-- **Specification**: FR-007; constitution: external service calls
+- T007 through T010 are complete.
+- `/` builds and renders through the local Vite proxy with correct loading/error shells and no page-level horizontal overflow.
+
+## Phase 3: Feature Implementation (One Feature at a Time)
+
+Complete each feature's backend rule, API response, React UI, and tests before starting the next feature.
+
+### Feature 3.1 - Sprint Summary, Scope, Pace, and Burndown
+
+#### T011 - Implement snapshot metric domain services
+
+- **Description**: Implement and unit-test the deterministic sprint scope, pace, freshness, and burndown calculations.
+- **Milestone**: M3.1
+- **Dependencies**: T004, T005, T006
+- **Specification**: FR-003 through FR-010, FR-020, FR-022; Derived Values
+- **Status**: Not started
 - **Acceptance criteria**:
-  - Jira and Confluence calls use bounded timeouts and approved retry/backoff behavior for transient errors and rate limits.
-  - Jira list requests follow all required pagination tokens/pages rather than silently truncating results.
-  - Cancellation and partial/failed responses are surfaced according to the approved policy and do not discard saved drafts.
+  - Pure services implement UTC weekday count, current/original scope, completion, remaining points, expected completion, pace variance, freshness, and ideal/actual burndown.
+  - `E/N`, rounding, snapshot selection, zero-scope, and missing-estimate rules match the spec exactly.
+  - Unit tests cover pre-start, as-of, sprint-end, zero working days, zero scope, missing snapshot, stale snapshot, additions/removals, and inconsistent totals.
 
-### T023 - Define configuration and sprint-list API routes
+#### T012 - Complete dashboard summary and burndown API data
 
-- **Milestone**: M2
-- **Depends on**: T013, T018, T019, T020, T021
-- **Specification**: FR-002, FR-004, FR-005, FR-008; User Story 1
+- **Description**: Assemble the validated database snapshot and calculated summary/burndown values into the dashboard API response.
+- **Milestone**: M3.1
+- **Dependencies**: T006, T011
+- **Specification**: API Contracts; FR-002 through FR-009, FR-018 through FR-023
+- **Status**: Not started
 - **Acceptance criteria**:
-  - Versioned routes expose only approved non-secret configuration status and closed-sprint selection data.
-  - Request/response schemas and errors use shared contracts and validate inputs at the boundary.
-  - The browser does not call Jira or Confluence directly.
+  - `GET /api/v1/dashboard` reads one consistent database snapshot and returns metadata, summary/pace fields, scope events, burndown, and safe error states.
+  - The latest actual burndown reconciles with current scope minus completed points for that same snapshot.
+  - API behavior covers no active sprint, empty active sprint, invalid data, and stale data as specified.
 
-### T024 - Verify Atlassian adapter security and failures
+#### T013 - Build summary and burndown UI slice
 
-- **Milestone**: M2
-- **Depends on**: T018 through T023
-- **Specification**: FR-003 through FR-007; SC-008
+- **Description**: Render sprint context, scope, pace, and ideal/actual burndown using the tested dashboard API response.
+- **Milestone**: M3.1
+- **Dependencies**: T009, T012
+- **Specification**: UI Screens items 1-3 and 7; SC-002 through SC-004
+- **Status**: Not started
 - **Acceptance criteria**:
-  - Mock tests cover missing config, invalid auth, permission failure, timeout, rate limit, pagination, and sanitized errors.
-  - Tests prove no credential appears in logs, client responses, or generated browser assets.
-  - The configuration check cannot issue a Confluence page-creation request.
+  - UI shows metadata, original/current scope, net scope change, completion, expected completion, pace variance, elapsed/remaining working days, and dated scope events.
+  - Ideal line uses the original commitment; actual line uses only stored daily snapshots; the baseline point is ideal-only.
+  - Values and accessible chart summary match the API data; missing/stale values remain explicit.
 
-## Phase 3 - Jira Snapshot and Report Domain Rules
+### Feature 3.2 - Status, Blockers, Issue List, and Filters
 
-### T025 - Implement closed sprint discovery and selection
+#### T014 - Implement status/blocker aggregates and issue response
 
-- **Milestone**: M3
-- **Depends on**: T004, T020, T022, T023
-- **Specification**: FR-008, FR-009; SC-001
+- **Description**: Add issue-derived status counts, estimated-point totals, and flagged-only blocker data to the dashboard response.
+- **Milestone**: M3.2
+- **Dependencies**: T005, T006, T011
+- **Specification**: FR-011, FR-012, FR-015, FR-020; API Contracts
+- **Status**: Not started
 - **Acceptance criteria**:
-  - The API returns all closed sprints for the configured board, including identifiers and required dates.
-  - The default is the most recently closed sprint using the approved timezone/tie-break rule.
-  - A user can select a historical sprint by ID or unambiguous name; invalid/ambiguous selection returns an actionable error.
+  - API returns counts and points for all four statuses, including zero-count groups, and all issues in the sprint.
+  - Only `flagged=true` marks an issue blocked; priority does not determine blocked state.
+  - Unknown statuses invalidate seed data; descriptions are not persisted or returned.
 
-### T026 - Fetch sprint issues and historical status
+#### T015 - Build issue table and combined filters
 
-- **Milestone**: M3
-- **Depends on**: T004, T020, T022, T025
-- **Specification**: FR-010, FR-011, FR-014
+- **Description**: Render sprint issues and implement combined status, assignee, and blocked-only filtering in the browser.
+- **Milestone**: M3.2
+- **Dependencies**: T009, T014
+- **Specification**: User Story 4; FR-015, FR-016; SC-006
+- **Status**: Not started
 - **Acceptance criteria**:
-  - All required sprint issues and approved history/changelog data are retrieved with complete pagination.
-  - Membership/status values are interpreted using the accepted sprint-close rules.
-  - Unavailable history or partial Jira responses are marked explicitly and never silently treated as a complete snapshot.
+  - Issue table shows key, summary, assignee, status, priority, points, and flagged state.
+  - Status, assignee, and Blocked only filters combine with AND semantics and update visible row/result counts.
+  - Empty filter result shows an explicit empty state; all controls are keyboard operable.
 
-### T027 - Persist normalized Jira source snapshots
+#### T016 - Test issue, status, and blocker slice
 
-- **Milestone**: M3
-- **Depends on**: T007, T015, T026
-- **Specification**: FR-019; Key Entities: Sprint and Issue Snapshot
+- **Description**: Verify status grouping, blocked semantics, issue edge cases, and combined filter results.
+- **Milestone**: M3.2
+- **Dependencies**: T014, T015
+- **Specification**: FR-010 through FR-016; SC-006
+- **Status**: Not started
 - **Acceptance criteria**:
-  - A versioned migration adds only the approved minimum snapshot fields and retention metadata.
-  - Normalized sprint/issue snapshots retain source identity and capture time sufficient to explain report results.
-  - Migration and repository tests verify clean install, persistence, retrieval, and documented recovery behavior.
+  - Tests cover all supported statuses, zero-count status groups, unknown status rejection, missing estimate, unassigned issue, and flagged/unflagged cases.
+  - Browser tests cover each filter and their combinations, including zero matches.
 
-### T028 - Implement sprint classification and metric rules
+### Feature 3.3 - Ten-Person Workload
 
-- **Milestone**: M3
-- **Depends on**: T004, T005, T026
-- **Specification**: FR-011 through FR-013, FR-017, FR-018; SC-003
+#### T017 - Implement team workload aggregation
+
+- **Description**: Calculate assigned, completed, and remaining points for every seeded teammate and the unassigned group.
+- **Milestone**: M3.3
+- **Dependencies**: T005, T011
+- **Specification**: FR-013, FR-014, SC-005
+- **Status**: Not started
 - **Acceptance criteria**:
-  - Completed, incomplete, committed points, completed points, and completion percentage follow the accepted rules.
-  - Missing estimates, zero commitments, moved/reopened issues, estimate changes, and subtasks follow defined behavior.
-  - Pure domain functions return deterministic results for the same normalized input.
+  - API derives assigned, completed, and remaining points for every active team member from in-scope issues.
+  - All 10 members appear, including members with zero points; unassigned points are grouped separately.
+  - No ranking, utilization, over-allocation, or performance metric is derived.
 
-### T029 - Represent incomplete and ambiguous report data
+#### T018 - Build and test workload UI slice
 
-- **Milestone**: M3
-- **Depends on**: T005, T026, T028
-- **Specification**: FR-014; User Story 2 scenario 4
+- **Description**: Display per-member point workload accessibly and verify every value against issue-level data.
+- **Milestone**: M3.3
+- **Dependencies**: T009, T017
+- **Specification**: UI Screens item 5; User Story 3; SC-005
+- **Status**: Not started
 - **Acceptance criteria**:
-  - Source limitations and incomplete-data reasons are represented in domain/API output.
-  - The approved publish gate blocks or warns/requests override for incomplete data as specified.
-  - The UI/API cannot mistake a partial Jira result for a complete sprint result.
+  - Workload visualization displays assigned/completed/remaining point totals and labels the data as workload context.
+  - Component and browser tests reconcile every displayed total with fixture issue records.
+  - Visual meaning is accessible without relying on color or ranking.
 
-### T030 - Add Jira domain fixtures and tests
+### Feature 3.4 - Freshness, Errors, and Prototype Boundary
 
-- **Milestone**: M3
-- **Depends on**: T027 through T029
-- **Specification**: SC-003, SC-007
+#### T019 - Complete freshness and error behavior
+
+- **Description**: Apply snapshot freshness rules and map API/network errors to the specified user states and manual retry behavior.
+- **Milestone**: M3.4
+- **Dependencies**: T009, T011, T012
+- **Specification**: FR-017, FR-021, FR-022, FR-026, FR-027; SC-007, SC-010
+- **Status**: Not started
 - **Acceptance criteria**:
-  - Fixtures cover pagination, historical status, membership changes, reopened issues, estimate changes, missing estimates, zero points, risk boundaries, and unavailable history.
-  - Expected metrics/classifications are tied to approved examples from T004/T005.
-  - Domain and repository tests run without live Jira access.
+  - API and UI distinguish current/stale snapshots using the specified 24-hour rule and UTC `asOf` timestamp.
+  - API errors map to no-sprint, retryable network/503, or non-retryable invalid-data states as specified.
+  - Manual retry does not trigger mutation or automatic retry; sensitive diagnostics remain server-side.
 
-## Phase 4 - Report Generation and Draft Persistence
+#### T020 - Verify feature-slice integration
 
-### T031 - Implement approved executive summary generator
+- **Description**: Confirm all completed feature slices use one consistent snapshot and shared contracts without duplicated calculations.
+- **Milestone**: M3.4
+- **Dependencies**: T013, T016, T018, T019
+- **Specification**: FR-020, FR-021; SC-002 through SC-007
+- **Status**: Not started
+- **Acceptance criteria**:
+  - Complete API payload renders without duplicate metric calculations in React.
+  - Summary, burndown, statuses, blockers, workload, filters, and errors all derive from the same fixture snapshot.
+  - Contract checks catch missing/nullable/invalid payload fields before the UI renders them.
 
+### Phase 3 Exit Gate: Feature Slices Complete
+
+- T011 through T020 are complete in order, one vertical feature slice at a time.
+- Domain/API/UI results reconcile against fixtures, and each slice has focused unit/API/browser tests.
+
+## Phase 4: Integration and Testing
+
+### T021 - Run clean-start integration workflow
+
+- **Description**: Validate the full Docker-backed migration, seed, API, and frontend startup from a clean checkout.
 - **Milestone**: M4
-- **Depends on**: T006, T028, T029
-- **Specification**: FR-016; SC-002
+- **Dependencies**: T001 through T020
+- **Specification**: SC-001, SC-002, SC-007, SC-010
+- **Status**: Not started
 - **Acceptance criteria**:
-  - The selected deterministic or approved LLM method generates a plain-language summary from verified report facts only.
-  - Generated content contains no issue keys or unsupported claims and reflects missing/ambiguous source data.
-  - Provider/service failure follows the approved fallback and does not lose the source snapshot or existing draft.
+  - A clean checkout starts pinned Docker/PostgreSQL, runs migrations/seeds, starts API and frontend, and reaches the dashboard using documented commands.
+  - `GET /api/v1/health` and `GET /api/v1/dashboard` return the specified response/error behavior.
+  - The process binds only to loopback and uses only fictional data; no external Jira calls occur.
 
-### T032 - Render complete ordered Markdown report
+### T022 - Run end-to-end acceptance tests
 
+- **Description**: Exercise the dashboard's user stories and API outcomes as complete browser workflows using fictional data.
 - **Milestone**: M4
-- **Depends on**: T001, T028, T031
-- **Specification**: FR-015 through FR-018; SC-002
+- **Dependencies**: T021
+- **Specification**: User Stories 1-5; SC-001 through SC-011
+- **Status**: Not started
 - **Acceptance criteria**:
-  - Markdown includes all seven required sections in the specified order.
-  - Metadata, metrics, completed/incomplete tables, risk reasons, and detailed appendix use the approved field and missing-value rules.
-  - Executive summary remains plain-language and issue identifiers remain outside that section.
+  - Browser tests cover loaded, no-active, active-empty, stale, error, and empty-filter states.
+  - Tests cover scope/pace/burndown consistency, all 10 team members, flagged blockers, and filter combinations.
+  - Tests run without Jira credentials, real user data, remote access, or external writes.
 
-### T033 - Apply approved audience separation and redaction
+### T023 - Verify accessibility and responsive behavior
 
+- **Description**: Verify WCAG 2.2 AA interaction requirements and desktop/mobile layout acceptance criteria.
 - **Milestone**: M4
-- **Depends on**: T002, T032
-- **Specification**: Constitution principle 4; FR-016, FR-018
+- **Dependencies**: T013, T015, T018, T022
+- **Specification**: Non-Functional Requirements; SC-008, SC-011
+- **Status**: Not started
 - **Acceptance criteria**:
-  - The generated and publishable content follows the approved stakeholder/internal visibility policy.
-  - Internal-only fields are omitted, redacted, or placed in a separately permissioned output as decided.
-  - Tests verify external-facing output cannot include content prohibited by the policy.
+  - WCAG 2.2 AA checks cover labels, keyboard navigation, focus, chart text alternatives, and color-independent states.
+  - Desktop and mobile checks show no page-level horizontal overflow; only the issue table may scroll internally.
 
-### T034 - Persist draft revisions and metadata
+### T024 - Document and hand off the local prototype
 
+- **Description**: Document pinned tool versions, local operation, seed lifecycle, endpoint behavior, and explicit prototype exclusions.
 - **Milestone**: M4
-- **Depends on**: T007, T015, T027
-- **Specification**: FR-019, FR-027; Key Entities: Report Draft
+- **Dependencies**: T001 through T023
+- **Specification**: SC-001, SC-007, SC-010; Constitution: Development Workflow
+- **Status**: Not started
 - **Acceptance criteria**:
-  - Versioned migrations and repositories persist draft content, source sprint/snapshot reference, generation time, status, and revision metadata.
-  - Draft reads return the revision and metadata authorized for the caller.
-  - Retention and deletion follow the approved policy; migrations are tested from a clean database.
-
-### T035 - Implement draft lifecycle and regeneration rules
-
-- **Milestone**: M4
-- **Depends on**: T007, T034
-- **Specification**: FR-019 through FR-021
-- **Acceptance criteria**:
-  - Generation/regeneration creates or updates drafts according to the approved identity/version rules.
-  - Published revisions remain immutable; edits and stale concurrent saves follow the approved conflict behavior.
-  - Failure during generation preserves previously saved revisions and state accurately.
-
-### T036 - Add report-generation and draft APIs
-
-- **Milestone**: M4
-- **Depends on**: T013, T018, T027 through T035
-- **Specification**: FR-019 through FR-022; User Stories 2 and 3
-- **Acceptance criteria**:
-  - Versioned contract routes support report generation and authorized draft retrieval/save.
-  - Inputs, payloads, and persisted content are validated and errors use the common non-sensitive format.
-  - Generate/save operations have no Confluence side effect and expose operation status/progress as specified.
-
-### T037 - Test report assembly and persistence
-
-- **Milestone**: M4
-- **Depends on**: T031 through T036
-- **Specification**: SC-002 through SC-004, SC-007
-- **Acceptance criteria**:
-  - Tests verify section order, output fields, privacy policy, missing-data language, revisions, regeneration, and concurrent/stale edits.
-  - Tests verify no Jira/Confluence live calls are required and generation never publishes.
-  - Saved and reloaded content matches the generated/reviewed revision exactly.
-
-## Phase 5 - Review, Edit, Import, and Export Workflow
-
-### T038 - Build sprint selection and generation UI
-
-- **Milestone**: M5
-- **Depends on**: T023, T025, T036
-- **Specification**: User Story 2; FR-008, FR-009; SC-001
-- **Acceptance criteria**:
-  - UI defaults to the latest closed sprint and permits historical sprint selection.
-  - The user can start generation and sees the selected sprint identity before processing.
-  - Invalid/empty sprint results provide a useful recoverable state.
-
-### T039 - Implement operation progress and result states
-
-- **Milestone**: M5
-- **Depends on**: T036, T038
-- **Specification**: User Story 2 scenario 5; Constitution: Validated and Accessible User Workflows
-- **Acceptance criteria**:
-  - Long-running work exposes progress and distinct success, incomplete, and failure results.
-  - Duplicate generation clicks are prevented or safely deduplicated.
-  - Status changes are announced accessibly and failures provide a retry path that preserves saved drafts.
-
-### T040 - Build draft review, edit, and save UI
-
-- **Milestone**: M5
-- **Depends on**: T033 through T036
-- **Specification**: User Story 3; FR-020
-- **Acceptance criteria**:
-  - User can open an authorized draft and see source sprint, generation time, review status, and content.
-  - User can edit and save content; successful save displays the persisted revision/timestamp.
-  - Unsaved or conflicting changes are surfaced and cannot be silently discarded.
-
-### T041 - Implement safe Markdown preview and editor behavior
-
-- **Milestone**: M5
-- **Depends on**: T008, T032, T040
-- **Specification**: FR-020, FR-023, FR-024
-- **Acceptance criteria**:
-  - Preview supports the approved Markdown subset and sanitizes imported/user-edited content.
-  - Unsupported syntax is handled using the accepted policy and does not silently render as executable content.
-  - The preview clearly identifies incomplete data and distinguishes stakeholder/internal sections per T033.
-
-### T042 - Implement Markdown download and re-import
-
-- **Milestone**: M5
-- **Depends on**: T007, T008, T035, T040, T041
-- **Specification**: FR-020, FR-021
-- **Acceptance criteria**:
-  - A saved revision downloads as a UTF-8 Markdown file with a documented filename/content convention.
-  - Import validates file type/size/content and matches it to the correct draft under the approved identity policy.
-  - Malformed, stale, or conflicting imports show actionable errors and do not overwrite the current revision silently.
-
-### T043 - Verify accessible review workflow
-
-- **Milestone**: M5
-- **Depends on**: T038 through T042
-- **Specification**: Constitution: Validated and Accessible User Workflows; SC-008
-- **Acceptance criteria**:
-  - Review workflow controls are keyboard-operable and have accessible labels/status announcements.
-  - Automated component/API tests cover save/reload fidelity, error states, input validation, and unsafe Markdown handling.
-  - The agreed accessibility target is checked for the changed workflow.
-
-## Phase 6 - Confirmed Confluence Publishing
-
-### T044 - Convert Markdown and verify publish preview fidelity
-
-- **Milestone**: M6
-- **Depends on**: T008, T032, T041
-- **Specification**: FR-024; User Story 4
-- **Acceptance criteria**:
-  - Supported Markdown converts to the configured Confluence representation.
-  - Conversion rejects/reports unsupported constructs according to the approved policy.
-  - Confirmation preview content corresponds to the content that will be sent to Confluence.
-
-### T045 - Build explicit publish confirmation UI
-
-- **Milestone**: M6
-- **Depends on**: T002, T033, T040, T044
-- **Specification**: FR-023; SC-004
-- **Acceptance criteria**:
-  - Publish confirmation identifies destination, page title, audience, exact draft revision, and content preview.
-  - Cancel/close performs no publish request and preserves the draft.
-  - Confirmation is available only to authorized users and for a saved/eligible reviewed revision.
-
-### T046 - Implement publish-operation identity and recovery
-
-- **Milestone**: M6
-- **Depends on**: T008, T015, T034, T044
-- **Specification**: FR-027, FR-028; SC-006
-- **Acceptance criteria**:
-  - A migration stores operation identity, draft revision, state, timestamps, and reconciliation data.
-  - Retries reuse the same operation identity; an intentional republish creates a separate confirmed operation.
-  - Timeout-after-create and database-failure-after-remote-success cases can be reconciled without blindly creating duplicates.
-
-### T047 - Create Confluence child-page publish API
-
-- **Milestone**: M6
-- **Depends on**: T003, T021, T022, T044, T045, T046
-- **Specification**: FR-023 through FR-026; SC-005
-- **Acceptance criteria**:
-  - The backend revalidates authorization, confirmation, draft revision, destination, and publish-operation state before the external create call.
-  - A confirmed operation creates a new child page under the configured parent/space with the accepted title convention.
-  - Existing pages are never overwritten; errors do not expose tokens or sensitive upstream details.
-
-### T048 - Persist publish outcome and expose status
-
-- **Milestone**: M6
-- **Depends on**: T046, T047
-- **Specification**: FR-027 through FR-029; SC-005, SC-006
-- **Acceptance criteria**:
-  - Successful page ID/title/URL/time and exact draft revision are recorded.
-  - Failed and unknown outcomes remain distinct from success and have a safe recovery/status path.
-  - Status retrieval is authorized and uses the shared versioned API contract.
-
-### T049 - Test publishing safeguards and failure paths
-
-- **Milestone**: M6
-- **Depends on**: T044 through T048
-- **Specification**: FR-022 through FR-028; SC-004 through SC-007
-- **Acceptance criteria**:
-  - Mocked tests cover cancellation, no-confirmation API access, success, auth failure, conversion failure, timeout-after-create, persistence failure, retry, and intentional republish.
-  - One operation cannot create duplicates; distinct confirmed operations can create separate pages.
-  - Routine tests never issue a request to a production Confluence space.
-
-## Phase 7 - History, End-to-End Validation, and Release Readiness
-
-### T050 - Implement report history API
-
-- **Milestone**: M7
-- **Depends on**: T007, T034, T035, T048
-- **Specification**: FR-027, FR-029; User Story 5
-- **Acceptance criteria**:
-  - Authorized history results follow the approved units, retention, filtering, ordering, and state semantics.
-  - Drafts, revisions, failed/unknown operations, and successful pages are distinguishable.
-  - Successful entries include a valid stored Confluence page reference where available.
-
-### T051 - Build report history UI
-
-- **Milestone**: M7
-- **Depends on**: T043, T050
-- **Specification**: User Story 5; FR-029
-- **Acceptance criteria**:
-  - User can view history entries with sprint identity, generation time, and accurate draft/publish state.
-  - Successful entries link to Confluence; failed/unknown entries are not presented as published.
-  - History is keyboard accessible and reports empty/loading/error states clearly.
-
-### T052 - Run mocked end-to-end workflow tests
-
-- **Milestone**: M7
-- **Depends on**: T037, T043, T049, T051
-- **Specification**: SC-001 through SC-008
-- **Acceptance criteria**:
-  - Automated tests exercise select, generate, review/edit, save, confirm/cancel, publish status, and history as one workflow.
-  - Jira and Confluence are mocked; no live credentials or external page creation are needed.
-  - Tests assert security, audience policy, incomplete-data behavior, and reviewed-revision identity.
-
-### T053 - Perform sandbox-only Atlassian end-to-end validation
-
-- **Milestone**: M7
-- **Depends on**: T003, T047 through T052
-- **Specification**: User Stories 1-5; Dependencies and Constraints
-- **Acceptance criteria**:
-  - A deliberate manual test uses least-privilege sandbox credentials and a non-production Confluence space.
-  - The test verifies sprint retrieval, report accuracy against known data, permissions, rendered conversion, parent page, title, and URL.
-  - Test evidence is recorded and cleanup/retention expectations are followed; no production stakeholder page is created.
-
-### T054 - Verify operational and non-functional readiness
-
-- **Milestone**: M7
-- **Depends on**: T014, T015, T017, T022, T043, T049, T053
-- **Specification**: Constitution: Technology and Operational Constraints; SC-008
-- **Acceptance criteria**:
-  - Docker startup, migration, backup/restore, secret provisioning/redaction, timeout/rate-limit, and recovery procedures are exercised or verified.
-  - Agreed performance, accessibility, supported-client, and concurrency targets pass documented checks.
-  - Production and sandbox settings are separated and no production credentials are required for routine CI.
-
-### T055 - Complete documentation and release sign-off
-
-- **Milestone**: M7
-- **Depends on**: T009, T050 through T054
-- **Specification**: All user stories, FRs, SCs; Constitution: Development Workflow and Governance
-- **Acceptance criteria**:
-  - Setup, configuration, user workflow, operations, troubleshooting, and known limitations are documented.
-  - Each functional requirement and success criterion links to test or sandbox evidence; unresolved items are explicitly listed.
-  - Product and security reviewers approve the release scope and evidence before V1 is declared ready.
+  - Documentation includes pinned tool versions, local start/stop/reset steps, API endpoints, seed snapshot semantics, and troubleshooting.
+  - Explicitly documents no Jira integration, no authentication/remote access, no pagination/production-scale promise, and the flagged-only blocker rule.
+  - No task adds AES encryption or an `ENCRYPTION_SECRET`; no actual credential is used in the mock-only prototype.
 
 ## Milestone Gates
 
-| Milestone | Required tasks | Gate |
+| Milestone | Tasks | Gate |
 |---|---|---|
-| M0 | T001-T009 | Product scope and P0 decisions recorded; dependent implementation may start. |
-| M1 | T010-T017 | Clean-checkout web/API/database startup and CI gates work. |
-| M2 | T018-T024 | Access model, server config, mocked service adapters, and sprint-list API are secure. |
-| M3 | T025-T030 | Sprint snapshots and domain rules are deterministic and tested. |
-| M4 | T031-T037 | Complete report drafts persist and generation cannot publish. |
-| M5 | T038-T043 | Review/edit/import/export workflow preserves the exact reviewed revision. |
-| M6 | T044-T049 | Confirmed publishing creates new pages and retries are recoverable/idempotent. |
-| M7 | T050-T055 | History, end-to-end evidence, operations, and sign-off are complete. |
+| M1 - Backend setup | T001-T006 | Exact pins, database, migrations/seed, API contracts, and health endpoint work locally. |
+| M2 - Frontend setup | T007-T010 | React/Vite route and accessible UI shell build and call the local API proxy. |
+| M3 - Feature slices | T011-T020 | Summary, issue/filter, workload, freshness, and error slices pass focused tests in order. |
+| M4 - Integration/testing | T021-T024 | Clean local workflow and all prototype acceptance checks pass. |
 
-## Cross-Cutting Rules
+## Cross-Phase Quality Gates
 
-- Database changes require versioned migrations and verification; tests must cover clean database setup.
-- Changes crossing frontend/backend boundaries update `packages/contracts` and verify both producer and consumer behavior.
-- No Jira/Confluence credentials may enter browser assets, client responses, report content, or logs.
-- Generation and draft saving never publish. Page creation requires backend-enforced confirmation for the exact reviewed revision.
-- Live Atlassian writes are limited to T053 in a non-production sandbox; all routine automated tests use mocks.
+- Exact runtime/dependency/image pins are required before backend implementation proceeds.
+- Database changes use versioned migrations; fixture validation and reset are atomic.
+- Cross-layer changes update `packages/contracts` and test both backend and browser validation.
+- Business calculations are tested independently from HTTP and React.
+- Routine tests use only fictional seed data and make no Jira/Confluence calls.
+- Changes beyond the prototype scope require an approved specification/clarification update before implementation.

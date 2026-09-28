@@ -1,181 +1,141 @@
-# Implementation Plan: Sprint Summary and Confluence Publishing
+# Implementation Plan: Staff Augmentation Sprint Dashboard
 
 - **Feature**: `spec/specification.md`
 - **Constitution**: `spec/constitution.md`
-- **Clarifications**: `spec/clarify.md`
+- **Clarification dispositions**: `spec/clarify.md`
 - **Status**: Draft
-**Plan date**: 2026-09-28
+- **Plan date**: 2026-09-28
 
 ## Goal
 
-Deliver a browser-based workflow for selecting a completed Jira sprint, generating and saving a report draft, reviewing/editing the draft, and explicitly publishing a confirmed version as a new Confluence child page. Implementation must follow the constitution and must not invent answers to unresolved requirements.
+Deliver a PM-operated, loopback-only sprint dashboard using one fictional project, one team of 10 active members, and at most one active sprint. The local application consists of React/Vite, Express, and PostgreSQL 15 via Docker. It is read-only at runtime and does not connect to Jira.
 
 ## Current Repository Baseline
 
-- `apps/api/src/server.ts`, `apps/web/src/App.tsx`, `apps/web/src/main.tsx`, and `packages/contracts/src/index.ts` exist but are empty.
-- The API route/service folders and web feature folders contain placeholders only.
-- No JavaScript package manifests were found; the Node/React workspace, dependencies, scripts, and CI checks need to be established.
-- The root `.env.example` currently documents Jira/Confluence variables for the older Python workflow. Treat these values as a reference only; adapt configuration for the server-side web application and never put secrets in Vite-exposed variables.
-- No PostgreSQL schema or migration framework is present in the inspected application paths.
+- Application directories exist under `apps/web`, `apps/api`, and `packages/contracts`.
+- No package manifests, package lockfiles, Node version file, Docker Compose file, or database migration configuration were found during plan preparation.
+- The static prototype at `work/jira-sprint-dashboard` is a visual reference only, not the target architecture.
+- Exact runtime, dependency, and database image pins are required by the constitution but are not yet recorded.
 
-## Delivery Strategy
+## Phase 1: Backend Setup (Database and API Skeleton)
 
-Build in vertical slices with mocked Atlassian services first. Start work that is independent of product decisions in the foundation phase, but do not implement report semantics, authentication, audience controls, or LLM behavior until the relevant P0 clarifications are accepted. Keep Confluence page creation disabled in local/CI tests unless a deliberate sandbox-only end-to-end run is being performed.
+**Milestone M1: Local backend foundation boots**
 
-## Phase 0 - Resolve Product and Data Decisions
+### Work
 
-**Purpose**: Remove decisions that could produce incorrect sprint metrics, expose internal information, or publish duplicate pages.
+- Before installing or implementing application dependencies, select exact compatible releases within the constitutional React 18.3.x, Vite 6.x, Node 22.x LTS, Express 5.x, PostgreSQL 15.x, Docker Engine, and Compose baselines. Record Node in `.node-version` or `.nvmrc`, exact JavaScript dependencies in manifests and a committed lockfile, and the PostgreSQL image tag/digest and container-tool versions in checked-in configuration. CI must verify the pins.
+- Establish workspace manifests and scripts for `apps/api` and `packages/contracts`.
+- Configure TypeScript, Node.js, Express 5, environment validation, and the backend structure required by `spec/constitution.md`.
+- Add Docker Compose for PostgreSQL 15 with health checks and loopback-only exposure. Add the selected versioned migration tool and first schema migration.
+- Implement atomic seed/reset for exactly one fictional project/team, 10 active team members, at most one active sprint, the four supported statuses, issues, scope changes, and daily burndown snapshots.
+- Add the shared API contract for `GET /api/v1/health` and `GET /api/v1/dashboard`. The dashboard response schema includes project/team/sprint metadata, summary and pace metrics, scope changes, status aggregates, workload, burndown, and the complete issue set.
+- Implement `GET /api/v1/health`; register the dashboard route and repository/service boundaries without returning placeholder or fabricated metrics before Phase 3.
+- Bind Express to `127.0.0.1`; do not configure Jira credentials or external service adapters.
 
-**Milestone M0: Implementation baseline approved**
+### Exit Criteria
 
-- Resolve all P0 findings in `spec/clarify.md`: user identity/authorization; stakeholder versus appendix visibility; Jira/Confluence deployment and authentication; historical sprint membership/status source; point formulas; risk policy; and executive-summary generation method and data handling.
-- Resolve P1 decisions needed for architecture: configuration ownership, draft/revision lifecycle, publish idempotency and reconciliation, data retention, Markdown handling, and release scope.
-- Update `spec/specification.md` with decisions, acceptance criteria, and any revised scope; update `spec/clarify.md` to mark resolved items with decision references.
-- Assign the feature branch and replace `TBD` metadata when implementation is scheduled.
+- Exact toolchain pins are committed and CI verifies them.
+- A clean database migrates and seeds atomically; invalid cardinality or inconsistent seed data fails without partial writes.
+- The API health endpoint returns ready/not-ready as specified, and the dashboard route/contract/error types are defined.
+- No live Jira credentials, remote bind address, or secret-encryption utility is introduced for mock-only mode.
 
-**Exit criteria**: No unresolved P0 decision affects security, report correctness, audience visibility, or publish behavior. Product owner approves the revised requirements and V1 closed-sprint-only scope; release/version reporting remains deferred unless separately specified.
+## Phase 2: Frontend Setup (UI Skeleton and Routing)
 
-## Phase 1 - Application and Environment Foundation
+**Milestone M2: Routed dashboard shell renders locally**
 
-**Purpose**: Create a reproducible React/Express/PostgreSQL development baseline.
+### Work
 
-**Milestone M1: Local vertical slice boots**
+- Establish the React 18.3.x/Vite 6.x workspace in `apps/web` using the exact versions pinned in Phase 1.
+- Configure Vite to proxy `/api` to Express; expose only the local route `/` and keep the development server on `127.0.0.1`.
+- Create the application shell, dashboard route, shared layout, feature-owned `sprint-dashboard` structure, and API client using the shared contract in `packages/contracts`.
+- Add the UI skeleton for the context header, summary area, burndown, status/blockers, team workload, and issue list. At this phase, use typed loading/skeleton states rather than inventing metric values.
+- Add accessible primitives for labeled filters, status feedback, focus states, chart text alternatives, and responsive containers.
+- Implement the API client response-schema validation and loading, no-active-sprint, empty-active-sprint, stale, and error state shells.
 
-- Establish the JavaScript workspace/package layout, pinned runtime/dependency versions, and root development/build/test/lint/typecheck scripts.
-- Configure React 18 + Vite for `apps/web`, Node.js + Express for `apps/api`, and shared TypeScript/API types in `packages/contracts`.
-- Add Docker Compose (or the repository's chosen Docker workflow) for PostgreSQL 15 with persistent local development storage and health checks.
-- Add versioned database migration tooling and an initial migration/bootstrap path. Avoid undocumented manual schema changes.
-- Implement minimal API and web startup/health paths, environment validation, and a safe `.env.example`; ensure browser-exposed variables contain no credentials.
-- Add CI checks for install, typecheck, lint, tests, build, and migration verification.
+### Exit Criteria
 
-**Exit criteria**: A clean checkout can start the web app, API, and database using documented commands; health checks succeed; CI passes; no secret is needed or committed for the smoke path.
+- `/` renders and routing/build checks pass.
+- The UI can call the API through the Vite proxy and safely represent loading/error states without placeholder metrics.
+- Desktop/mobile layout shell and keyboard-accessible control patterns are in place.
 
-## Phase 2 - Identity, Configuration, and Atlassian Adapters
+## Phase 3: Feature Implementation (One Feature at a Time)
 
-**Purpose**: Establish the approved access model and isolate external services behind backend adapters.
+Each feature is a vertical slice: backend domain rules, API contract/response, React UI, and focused tests are completed together before starting the next feature. The active specification and `packages/contracts` remain the source of truth.
 
-**Milestone M2: Secure service connectivity**
+### Feature 3.1 - Sprint Summary, Scope, Pace, and Burndown
 
-- Implement the approved authentication/authorization model, or document and enforce private single-user deployment boundaries if that is the approved choice.
-- Implement validated server-side Jira and Confluence configuration, secret loading, redacted logs, and configuration/connection status behavior.
-- Add Jira and Confluence service modules under `apps/api/src/services/`; keep credentials and network calls out of the browser.
-- Implement bounded timeouts, pagination, rate-limit/transient-error handling, and safe error translation.
-- Define and publish versioned API contracts for configuration status and closed-sprint listing, including response and error schemas.
-- Add mocked adapter tests and security checks for secret redaction and authorization.
+**Milestone M3.1: Summary metrics reconcile**
 
-**Exit criteria**: Authorized users can list closed sprints from a mock Jira service; service errors are actionable and non-sensitive; no request bypasses the backend; no live Confluence page can be created from configuration checks.
+- Implement UTC weekday count, original/current scope, completed/remaining points, completion percentage, expected completed points, pace variance, freshness, and ideal/actual burndown services.
+- Use `E/N`, two-decimal rounding, latest complete snapshot, and the exact rules in FR-003 through FR-009 and FR-022.
+- Show original commitment, current scope, net changes, date/goal metadata, as-of/freshness, pace, and burndown in the UI.
+- Test zero scope, zero estimates, boundaries, scope additions/removals, stale snapshots, and current snapshot reconciliation.
 
-## Phase 3 - Jira Snapshot and Report Domain Rules
+**Exit criteria**: API and UI values match deterministic fixtures; no stale, missing, or inconsistent value is presented as current fact.
 
-**Purpose**: Make sprint data and report calculations correct and independently testable.
+### Feature 3.2 - Status, Blockers, Issue List, and Filters
 
-**Milestone M3: Reproducible sprint facts**
+**Milestone M3.2: Issue review workflow works**
 
-- Implement closed-sprint discovery, latest-closed default selection, and explicit selection by sprint ID/name.
-- Retrieve all required pages of sprint issues and the history needed to apply the approved sprint-close membership and status rules.
-- Normalize Jira responses into domain types and a persisted/source snapshot sufficient to reproduce the report under the approved retention policy.
-- Implement completed/incomplete classification, point calculations, completion percentage, and risk detection as pure domain services using the accepted rules.
-- Represent missing, ambiguous, or historically unavailable data explicitly; mark incomplete results so the publish gate can enforce the approved policy.
-- Add fixtures for estimate changes, missing estimates, zero points, reopened/moved issues, duplicate risk reasons, boundary dates, pagination, and unavailable history.
+- Implement the four allowed status groups, counts/points, flagged-only blocker rule, issue table, and combined client-side status/assignee/blocked filters.
+- Keep issue summaries and priorities as display fields; only `flagged=true` determines blocked state. Priority `Blocker` does not imply blocked unless the feature spec is amended.
+- Include the dated aggregate add/remove scope-change list; do not add issue-level scope reasons or description storage.
+- Test unknown status rejection, unestimated/unassigned issues, empty filters, flagged vs unflagged, and all filter combinations.
 
-**Exit criteria**: Domain tests match accepted examples for every metric/classification rule; incomplete source data is surfaced; the same input snapshot produces deterministic domain results.
+**Exit criteria**: Filter results/counts reconcile with the complete sprint issue set; blocker state uses only the specified flag.
 
-## Phase 4 - Report Generation and Draft Persistence
+### Feature 3.3 - Ten-Person Workload
 
-**Purpose**: Produce complete, traceable, editable drafts without side effects in Confluence.
+**Milestone M3.3: Workload is accurate and non-evaluative**
 
-**Milestone M4: Generated draft is durable**
+- Derive assigned, completed, and remaining points for all 10 active team members and a separate Unassigned group when needed.
+- Display zero-point members and ensure workload is not ranked or described as utilization/performance.
+- Test per-member totals against issues, including missing points, zero assignments, and unassigned work.
 
-- Implement the approved executive-summary method with grounding and data-handling safeguards.
-- Generate Markdown sections in the required order: metadata, executive summary, metrics, completed work, incomplete work, risks/blockers, and appendix.
-- Apply the approved audience-separation/redaction policy to stakeholder and internal content.
-- Add PostgreSQL migrations and repositories for sprint/source snapshots, draft content, revisions, status, and generation metadata.
-- Define regeneration behavior, draft identity, version creation, stale-write/concurrent-edit handling, and error recovery per accepted decisions.
-- Implement backend report-generation and draft-read/save APIs using shared contracts; generation and saving must not publish.
-- Test required sections, output correctness, persistence, regeneration, incomplete-data behavior, and no-publish guarantees with mocks.
+**Exit Criteria**: All ten members appear and aggregate workload equals the issue-derived totals without performance inferences.
 
-**Exit criteria**: A mock Jira sprint generates a durable, reproducible draft with all required sections and metadata; a failed generation preserves prior saved drafts; no Confluence request is made.
+## Phase 4: Integration and Testing
 
-## Phase 5 - Review, Edit, Import, and Export Workflow
+**Milestone M4: Local prototype acceptance complete**
 
-**Purpose**: Let an authorized Project Manager review and edit the exact content that will be published.
+### Work
 
-**Milestone M5: Reviewable draft workflow complete**
+- Integrate the complete API response with the routed React page and shared contract validation.
+- Run the full Docker-backed startup, migration, atomic seed/reset, API, and browser workflow from a clean checkout.
+- Exercise `GET /api/v1/health` and `GET /api/v1/dashboard`, including no active sprint (`404`), active-but-empty sprint (`200` with empty values), stale data, unavailable database (`503`), and invalid data (`500`).
+- Run metric/domain tests, migration/seed tests, API contract/error tests, and browser tests for each user story and SC-001 through SC-011.
+- Verify desktop and mobile viewports, keyboard-only operation, accessible chart text, WCAG 2.2 AA checks, page-level overflow, loopback binding, and absence of secrets/real user data.
+- Document pinned tool versions, local start/stop/reset commands, endpoint contracts, fixture semantics, as-of/freshness behavior, and out-of-scope functionality.
 
-- Build the React workflow for sprint selection, generation progress, draft status, editing, saving, and source limitations.
-- Implement accessible loading, empty, error, success, and incomplete-data states with keyboard-operable controls and clear status feedback.
-- Implement Markdown rendering and editing using the approved supported syntax and sanitization rules.
-- Implement Markdown download and re-import with size/type validation, draft matching, revision checks, and useful parse errors.
-- Ensure the user can compare or identify generated versus edited content and that unsaved/stale edits are not silently lost.
-- Add component/API tests for keyboard behavior, accessibility requirements, sanitization, and saved-content fidelity.
+### Exit Criteria
 
-**Exit criteria**: A draft can be generated, edited, saved, downloaded, re-imported, and reopened; the persisted revision is the one supplied to the publish confirmation; unsafe content is not executed or silently accepted.
-
-## Phase 6 - Confirmed Confluence Publishing
-
-**Purpose**: Publish the reviewed revision safely and recoverably.
-
-**Milestone M6: New-page publishing is safe to retry**
-
-- Implement Markdown-to-Confluence conversion for the supported syntax and ensure the confirmation preview matches the converted output.
-- Build the explicit confirmation step showing destination, title, audience/content, and the exact draft revision.
-- Implement the approved page title convention and new child-page creation under the configured space/parent.
-- Persist publish operation identity and state before/after external requests; implement idempotent retries and reconciliation for timeout/ambiguous outcomes.
-- Preserve previous pages and support a separately confirmed intentional republish as a distinct operation.
-- Record successful page ID/title/URL/time and the exact draft revision; record failed/unknown outcomes without claiming success.
-- Add mocked tests for cancel-before-publish, confirmed success, authorization failure, conversion errors, timeout-after-create, database failure after remote success, retry, and intentional republish.
-
-**Exit criteria**: No page is created without explicit confirmation; one operation cannot accidentally create duplicate pages; a distinct confirmed republish creates a new page; the app accurately represents success, failure, or uncertain outcome.
-
-## Phase 7 - History, End-to-End Validation, and Release Readiness
-
-**Purpose**: Complete the user workflow and verify operational behavior against the acceptance criteria.
-
-**Milestone M7: V1 acceptance and deployment readiness**
-
-- Implement history listing for drafts, revisions, failed/unknown publish operations, and successful Confluence pages according to the approved history semantics.
-- Add end-to-end tests using fixtures and mocked Atlassian services for the full select-generate-review-publish/history flow.
-- Run a sandbox-only manual integration test with least-privilege test credentials and a non-production Confluence space; verify page permissions and rendering.
-- Validate Docker startup, migration/backup/restore procedure, CI checks, secret handling, log redaction, API pagination, performance targets, accessibility target, and error recovery.
-- Update setup, configuration, operator, user, and troubleshooting documentation; record known limitations and approved scope.
-- Obtain product/security sign-off and verify every requirement and success criterion against test evidence.
-
-**Exit criteria**: Acceptance criteria pass in CI or documented sandbox validation; no production publish is part of routine tests; deployment and recovery procedures are documented; product owner approves release.
+- All feature acceptance criteria pass on the exact pinned toolchain.
+- A clean local setup is reproducible; the API/UI expose only the fictional single-sprint prototype.
+- No live Jira, remote access, authentication, priority-based blocker inference, or production-scale claim is introduced.
 
 ## Cross-Phase Quality Gates
 
-- Every database change has a versioned migration, automated migration test, and rollback/recovery note where supported.
-- Every cross-layer behavior change updates the shared API contract and its consumer/provider tests.
-- External-service behavior is tested with mocks by default; live credentials are supplied only for deliberate sandbox tests.
-- Tests must cover failure and boundary paths, not only success paths; Jira pagination and publish ambiguity are release-blocking.
-- No client bundle, persisted report, or log may contain Atlassian credentials or tokens.
-- No code path may publish without explicit human confirmation of the destination and exact reviewed revision.
-- Any unresolved clarification that affects data correctness, privacy, authorization, or duplicate prevention blocks the dependent milestone.
+- Exact toolchain and image pins are a Phase 1 entry gate.
+- Each vertical feature updates shared contracts and includes provider/consumer tests before the next feature begins.
+- Database schema changes use versioned migrations; fixture replacement is validated and atomic.
+- Metric calculations are tested independently from HTTP and React.
+- API and UI errors must not expose SQL, secrets, stack traces, or real client/team data.
+- Any feature outside the prototype boundaries requires a specification and clarification update before implementation.
 
 ## Requirement Traceability
 
-| Plan phase | Main specification coverage |
+| Plan phase | Specification coverage |
 |---|---|
-| Phase 0 | Clarifications Needed; Constitution Check; all P0 items in `spec/clarify.md` |
-| Phase 1 | FR-001 to FR-005; Dependencies and Constraints |
-| Phase 2 | FR-002 to FR-009; User Story 1; Constitution: Secure Atlassian Integration |
-| Phase 3 | FR-008 to FR-014; SC-001, SC-003 |
-| Phase 4 | FR-015 to FR-019, FR-022; SC-002, SC-004, SC-007 |
-| Phase 5 | FR-020 to FR-021; User Story 3; Constitution: Validated and Accessible User Workflows |
-| Phase 6 | FR-023 to FR-028; SC-004 to SC-006 |
-| Phase 7 | FR-027 to FR-029; SC-001 to SC-008; Constitution: Testable Changes and Development Workflow |
+| Phase 1 | Constitution pinning and architecture; FR-018, FR-019, FR-023, FR-025, FR-026; SC-001, SC-010 |
+| Phase 2 | UI Screens; FR-017, FR-021; accessibility and responsive requirements |
+| Phase 3.1 | User Stories 1-2; FR-002 through FR-010, FR-020, FR-022; SC-002 through SC-004, SC-007 |
+| Phase 3.2 | User Story 4; FR-011, FR-012, FR-015 through FR-017; SC-006 |
+| Phase 3.3 | User Story 3; FR-013, FR-014; SC-005 |
+| Phase 4 | User Story 5; FR-017 through FR-027; SC-001 through SC-011 |
 
-## Risks and Dependencies
+## Resolved Scope Decisions
 
-- **Historical Jira data**: The integration may not expose enough history to reconstruct sprint-close membership/status. Resolve before domain implementation; otherwise define an explicit limitation and publication gate.
-- **Stakeholder visibility**: The detailed appendix may expose internal issue details. Resolve audience and permission requirements before implementing report rendering or publishing.
-- **Publish ambiguity**: Confluence may create a page even if the client times out. Resolve operation identity and reconciliation before enabling retries.
-- **Summary-generation method**: If an LLM is selected, provider approval, privacy, grounding, and operational cost become dependencies; otherwise define deterministic summary inputs and quality expectations.
-- **Repository bootstrap**: Existing web/API entry points are empty and JavaScript manifests are absent, so the initial phase has workspace and CI setup work before feature slices can run.
-
-## Explicitly Excluded from This Plan
-
-- Scheduled or webhook-triggered generation/publication.
-- Release/version reporting; deferred unless a separate scope update defines data, selection, metrics, and acceptance criteria.
-- Slack/email notifications and multi-project aggregation.
-- Production credentials or production Confluence writes in routine development and CI.
+- Blocked state is derived only from the issue `flagged` field. `priority=Blocker` is not a blocker rule in the active specification.
+- Phase one uses fictional data and no Jira credentials; AES-256-GCM secret encryption and `ENCRYPTION_SECRET` are not needed and are out of scope. If live credentials are introduced later, the specification and security design must be amended first.
+- The API endpoint contract is `GET /api/v1/health` and `GET /api/v1/dashboard`; both are defined in `spec/specification.md` and `packages/contracts` is the implementation contract source.
+- Shared hosting, auth, live Jira, pagination, and production scaling remain out of scope.
