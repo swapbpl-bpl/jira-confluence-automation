@@ -1,200 +1,325 @@
-# Feature Specification: Sprint Summary Generation and Confluence Publishing
+# Feature Specification: Staff Augmentation Sprint Dashboard
 
 - **Feature Branch**: `TBD`
 - **Created**: 2026-09-28
 - **Status**: Draft
-**Input**: Generate a summary from a completed Jira sprint and publish a reviewed summary to Confluence, based on `project_spec.md` and governed by `spec/constitution.md`.
+- **Input**: `project_spec.md`, governed by `spec/constitution.md`
 
 ## Summary
 
-Provide a web application for a Project Manager to select a completed Jira sprint, generate a stakeholder-ready summary with an internal issue-level appendix, review and edit the draft, and explicitly publish it as a new child page in Confluence. Generation and publication are separate actions. The application retains report drafts and publication metadata so the workflow is traceable and failed or repeated requests do not silently lose work or create duplicate pages.
+Provide a Project Manager and project team with a read-only view of one active sprint for a 10-person Staff Augment project. The dashboard uses story points to show completion, scope movement, delivery pace, status, blockers, and assigned-versus-completed work by teammate.
 
-V1 supports closed Jira sprints only. Release/version reporting is deferred until its selection flow, source data, metrics, and acceptance criteria are defined in a separate scope update.
+Phase one uses fictional seed data persisted in PostgreSQL 15. The browser reads data from a Node.js/Express API. There is no live Jira integration, authentication, remote hosting, or Jira credential in phase one. The target stack, folder structure, coding rules, and version-pin gate are defined by `spec/constitution.md`.
 
-The constitution's required stack governs this feature: React 18 with Vite, Node.js with Express, and PostgreSQL 15 via Docker. This replaces the Python CLI implementation described in the older project specification; this feature is a browser-based workflow backed by server APIs.
+## Goals
+
+- Make current sprint delivery progress and remaining work scannable for a Project Manager managing 10 people.
+- Preserve original commitment separately from current scope and show scope changes.
+- Present an ideal-versus-actual daily burndown and elapsed-time context without claiming a guaranteed forecast.
+- Show status distribution, explicitly flagged blockers, and each teammate's assigned, completed, and remaining points.
+- Allow status, assignee, and blocked-only filters to be combined.
+- Validate the product locally with fictional data before Jira integration or shared hosting is designed.
 
 ## User Scenarios & Testing
 
-### User Story 1 - Configure and connect services (Priority: P1)
+### User Story 1 - Inspect the Active Sprint (Priority: P1)
 
-As a Project Manager, I want the application configured for my Jira board and Confluence destination so that I can generate and publish reports for the correct team.
+As the Project Manager, I want a single overview of the team's active sprint so that I can understand delivery progress and remaining time without manually compiling issue data.
 
-**Why this priority**: The report cannot be generated or published without valid service configuration and destination details.
+**Why this priority**: Sprint delivery confidence is the primary dashboard purpose.
 
-**Independent Test**: Start the application with valid server-side configuration, verify that Jira sprint selection loads, and verify that a test Confluence destination can be checked without publishing a page.
-
-#### Acceptance Scenarios
-
-1. **Given** required Jira or Confluence configuration is missing or invalid, **When** the application initializes or the user starts the relevant operation, **Then** it reports which non-secret setting needs attention and does not make an unsafe request.
-2. **Given** valid configuration, **When** the user requests available sprints, **Then** the application returns sprints for the configured Jira board and project.
-3. **Given** an authentication or connectivity failure, **When** a service request fails, **Then** the UI displays a useful, non-sensitive error and the server logs no credential or token.
-
-### User Story 2 - Generate a sprint summary (Priority: P1)
-
-As a Project Manager, I want to generate a summary for the most recently closed sprint or a selected past sprint so that I can prepare stakeholder reporting without manually compiling Jira issues.
-
-**Why this priority**: Data retrieval and summary generation are the core value of the application.
-
-**Independent Test**: Use mocked Jira responses for a closed sprint and verify sprint selection, issue classification, metrics, report sections, and saved draft metadata without contacting live Atlassian services.
+**Independent Test**: Start the local application with the seed database and verify that the active sprint, team, scope, completion metrics, status distribution, and update date render from the API response.
 
 #### Acceptance Scenarios
 
-1. **Given** at least one closed sprint exists on the configured board, **When** the user opens report generation, **Then** the most recently closed sprint is selected by default.
-2. **Given** multiple closed sprints exist, **When** the user selects a sprint by name or ID, **Then** the generated report uses that sprint and its associated issues.
-3. **Given** Jira returns sprint and issue data, **When** the user generates a report, **Then** the application saves a draft containing all required report sections and the source sprint identity.
-4. **Given** Jira data is incomplete or ambiguous, **When** the report is generated, **Then** missing values or limitations are identified and are not presented as verified facts.
-5. **Given** a report operation is still in progress, **When** the user views the workflow, **Then** the application communicates progress and prevents accidental duplicate generation requests.
+1. **Given** the seed database contains one active sprint, **When** the dashboard loads, **Then** it shows the project name/type, team name, sprint key/name, goal, date range, and as-of date.
+2. **Given** the active sprint has estimated issues, **When** summary metrics are calculated, **Then** the dashboard shows original commitment, current scope, completed points, remaining points, and completion percentage using the rules in this specification.
+3. **Given** the API is loading, **When** the user opens the dashboard, **Then** a labeled loading state is shown without presenting placeholder numbers as real values.
+4. **Given** no active sprint is configured, **When** the dashboard loads, **Then** an explicit no-active-sprint state is shown.
 
-### User Story 3 - Review and edit a draft (Priority: P1)
+### User Story 2 - Understand Pace and Scope Changes (Priority: P1)
 
-As a Project Manager, I want to inspect and edit the generated report before publication so that errors and wording can be corrected before stakeholders see it.
+As the Project Manager, I want to compare sprint progress with elapsed time and see scope changes against the original commitment so that changing scope does not hide delivery risk.
 
-**Why this priority**: Human review is a mandatory publishing safeguard.
+**Why this priority**: A current-scope-only completion figure can obscure whether the team is delivering its original plan.
 
-**Independent Test**: Generate a draft from fixtures, edit its content, save it, reload it, and verify the saved version is the version supplied to the publish flow.
-
-#### Acceptance Scenarios
-
-1. **Given** a draft has been generated, **When** the user opens it, **Then** the application shows its sprint, generation time, report content, and review status.
-2. **Given** a draft is open, **When** the user edits and saves it, **Then** the application persists the reviewed content and an updated timestamp.
-3. **Given** a draft is ready for local review, **When** the user downloads it, **Then** the application provides a Markdown file that can be reviewed or edited outside the application.
-4. **Given** an externally edited Markdown draft, **When** the user returns it to the application, **Then** the content can be loaded into the review workflow and saved before publishing.
-5. **Given** a saved draft, **When** the user leaves and later returns, **Then** the saved content and publication state remain available.
-
-### User Story 4 - Explicitly publish a reviewed report (Priority: P1)
-
-As a Project Manager, I want to publish a reviewed draft only after confirming the destination and content so that unreviewed or unintended information is not sent to Confluence.
-
-**Why this priority**: Publishing is the final stakeholder-facing action and must remain under human control.
-
-**Independent Test**: Mock Confluence and verify that no page-creation request occurs before confirmation, that the confirmed payload uses the reviewed content and configured parent, and that a repeated network retry for the same operation does not create a duplicate page.
+**Independent Test**: Seed an original commitment, added and removed scope events, and daily burndown snapshots; verify the displayed baseline, current scope, net change, progress-versus-time signal, and chart values.
 
 #### Acceptance Scenarios
 
-1. **Given** a saved draft, **When** the user chooses Publish, **Then** the application presents the destination, page title, and content to be published for explicit confirmation.
-2. **Given** the user cancels or has not confirmed, **When** the publish flow is closed, **Then** no Confluence page is created and the draft remains available.
-3. **Given** the user confirms publication, **When** Confluence accepts the request, **Then** a new child page is created under the configured parent in the configured space, and the application records its title, URL, and publication time.
-4. **Given** the same confirmed request is retried because of a timeout or transient failure, **When** the retry is processed, **Then** the application avoids creating an unintended duplicate page and clearly reports whether publication succeeded.
-5. **Given** the user intentionally publishes a report again in a separate confirmed action, **When** Confluence accepts the new action, **Then** a new page is created; previously published pages are not overwritten.
+1. **Given** sprint scope changes after sprint start, **When** the overview is rendered, **Then** original commitment and current scope are shown separately with the net change.
+2. **Given** daily burndown snapshots exist, **When** the chart is rendered, **Then** actual remaining points follow those snapshots and the ideal line is shown against the original commitment baseline.
+3. **Given** the as-of date has a snapshot, **When** the dashboard shows today's remaining points, **Then** that value equals current scope minus completed estimated issue points.
+4. **Given** completed points are behind or ahead of the linear original-commitment pace, **When** the pace indicator is displayed, **Then** it is described as a signal and not a promise of completion.
+5. **Given** a point estimate is missing, **When** metrics are calculated, **Then** the issue is counted as unestimated and is not silently treated as zero-point work.
 
-### User Story 5 - Inspect report and publication history (Priority: P2)
+### User Story 3 - Review Team Workload (Priority: P1)
 
-As a Project Manager, I want to find drafts and previously published summaries so that I can check report status and revisit prior sprint history.
+As the Project Manager, I want assigned, completed, and remaining points for each teammate so that I can discuss sprint work distribution with the team.
 
-**Why this priority**: Retaining page history is a project requirement; an application history view makes the workflow traceable.
+**Why this priority**: The Project Manager manages a 10-person staff-augmentation team and needs team-level allocation context.
 
-**Independent Test**: Create multiple drafts and mock successful and failed publishing outcomes, then verify that the history view distinguishes each state and links successful publications to Confluence.
+**Independent Test**: Seed issues assigned across 10 members, including completed and unestimated work; verify per-person totals against issue data and verify that no performance ranking or utilization inference is produced.
 
 #### Acceptance Scenarios
 
-1. **Given** reports have been generated, **When** the user opens report history, **Then** reports are listed with sprint identity, generation date, and draft or publication status.
-2. **Given** a report was successfully published, **When** the user views its history entry, **Then** the Confluence title and page URL are available.
-3. **Given** a report is still a draft or publishing failed, **When** the user views its history entry, **Then** it is not represented as successfully published.
+1. **Given** the team has 10 active members, **When** the workload section renders, **Then** all 10 members appear, including members with no assigned points.
+2. **Given** a member has assigned issues, **When** their workload is calculated, **Then** assigned, completed, and remaining points equal the corresponding issue totals.
+3. **Given** an issue has no assignee, **When** workload is displayed, **Then** its points appear in an Unassigned group and are not attributed to a teammate.
+4. **Given** workload is displayed, **When** a user interprets the visualization, **Then** the UI labels it as workload context and does not rank people or imply utilization/performance.
+
+### User Story 4 - Find Issues, Status, and Blockers (Priority: P1)
+
+As a team member or Project Manager, I want to filter sprint issues by status, assignee, and flagged state so that I can focus on the work requiring attention.
+
+**Why this priority**: The aggregate charts must lead to an actionable view of the issues behind them.
+
+**Independent Test**: Use a fixture with issues across all standard statuses, multiple assignees, flagged and unflagged issues; exercise each filter alone and in combination, including a result set with no matches.
+
+#### Acceptance Scenarios
+
+1. **Given** issues are loaded, **When** the user selects a status, **Then** only issues with that status appear and the visible count updates.
+2. **Given** issues are loaded, **When** the user selects an assignee, **Then** only issues assigned to that member appear.
+3. **Given** issues are loaded, **When** the user enables Blocked only, **Then** only issues with Jira's flagged/impediment marker set appear.
+4. **Given** multiple filters are selected, **When** the issue list updates, **Then** all filters are combined using AND semantics.
+5. **Given** no issues match the filters, **When** the results render, **Then** the table is replaced by a clear empty state and the zero result count is shown.
+6. **Given** an issue's description contains words such as "blocked", **When** its Jira flag is not set, **Then** it is not classified as blocked.
+
+### User Story 5 - Recover from Data or Service Problems (Priority: P1)
+
+As a dashboard user, I want clear loading, stale, and error states so that I can tell whether displayed sprint data is trustworthy.
+
+**Why this priority**: Misleading or silently stale delivery metrics can lead to poor project decisions.
+
+**Independent Test**: Mock API success, empty sprint, database failure, malformed response, and stale as-of date; verify each UI state and ensure no error reveals SQL or environment secrets.
+
+#### Acceptance Scenarios
+
+1. **Given** the API returns a valid dashboard snapshot, **When** data is shown, **Then** its as-of timestamp is visible.
+2. **Given** the API returns an error or invalid payload, **When** the request fails, **Then** the UI shows a useful retryable message and does not render fabricated metrics.
+3. **Given** the snapshot is older than the configured freshness threshold, **When** the dashboard renders, **Then** it visibly labels the data as stale.
 
 ## Functional Requirements
 
-### Configuration and Integrations
+### Dashboard and Metric Rules
 
-- **FR-001**: The system MUST use React 18 and Vite for the frontend, Node.js and Express for the backend, and PostgreSQL 15 via Docker for application-persisted data.
-- **FR-002**: The backend MUST be the only application component that communicates with Jira, Confluence, or PostgreSQL.
-- **FR-003**: The system MUST read Jira and Confluence credentials from server-side environment configuration or an approved secret store; it MUST NOT store credentials in the browser or report database.
-- **FR-004**: The system MUST validate required configuration before requesting Jira or Confluence operations and MUST provide actionable errors that do not disclose secret values.
-- **FR-005**: The system MUST support a configured Jira site, project, and board, and a configured Confluence site, space, and parent page.
-- **FR-006**: Jira credentials SHOULD be read-only where supported. Confluence credentials MUST be limited to the permissions needed to create report pages where supported.
-- **FR-007**: Jira and Confluence requests MUST use bounded timeouts and handle authentication failures, rate limits, and transient errors without losing saved drafts.
+- **FR-001**: The system MUST show one configured team's active sprint and MUST NOT provide multi-board or sprint selection in phase one.
+- **FR-002**: The system MUST show project name/type, team name and size, sprint key/name/goal, start/end dates, and data as-of timestamp.
+- **FR-003**: The system MUST show original committed points, current scope points, net scope change, completed points, remaining points, completion percentage, elapsed working days, total working days, and working days remaining.
+- **FR-004**: Current scope MUST equal the sum of non-null story-point estimates for issues in the active sprint. Completed points MUST equal estimates for issues whose status maps to the `Done` group. Remaining points MUST equal current scope minus completed points.
+- **FR-005**: Completion percentage MUST be completed points divided by current scope. If current scope is zero, the percentage MUST be shown as unavailable rather than dividing by zero.
+- **FR-006**: The system MUST retain the original commitment and record additions/removals separately. Current scope MUST NOT overwrite the original commitment.
+- **FR-007**: The ideal burndown MUST be a linear trajectory from original committed points at sprint start to zero at sprint end. The actual line MUST use dated remaining-point snapshots and MUST NOT be fabricated from only the current snapshot.
+- **FR-008**: The current actual burndown value MUST reconcile to current scope minus completed estimated points for the as-of date. Inconsistent fixture data MUST fail validation or be surfaced as an error.
+- **FR-009**: Pace versus elapsed sprint time MUST be labeled as a directional signal, not a completion prediction.
+- **FR-010**: Missing story-point estimates MUST be shown as unestimated and excluded from point sums; their issue count MUST remain visible.
+- **FR-011**: Status breakdown MUST show issue counts and estimated points for `To Do`, `In Progress`, `In Review`, and `Done`.
+- **FR-012**: An issue MUST be considered blocked only when its `flagged`/impediment field is true.
+- **FR-013**: Per-person workload MUST show assigned, completed, and remaining estimated points for all 10 active team members. Unassigned work MUST be grouped separately.
+- **FR-014**: Workload MUST NOT be used to calculate utilization, performance ratings, rankings, or over-allocation.
+- **FR-015**: The issue table MUST show issue key, summary, assignee, status, priority, story points, and blocked state.
+- **FR-016**: Status, assignee, and blocked-only filters MUST be combinable, update the visible issue count, and provide an empty state when there are no matches.
+- **FR-017**: The UI MUST expose loading, success, stale-data, no-active-sprint, empty-filter, and recoverable error states.
 
-### Sprint Selection and Jira Data
+### API and Data Flow
 
-- **FR-008**: The system MUST list closed sprints available on the configured Jira board and MUST select the most recently closed sprint by default.
-- **FR-009**: The user MUST be able to select a specific sprint by name or ID to regenerate a historical report.
-- **FR-010**: For each run, the system MUST retrieve sprint name, start date, end date, goal when available, and issue key, summary, issue type, status, story points, and assignee when available.
-- **FR-011**: The system MUST classify completed work using Jira's Done status category and MUST identify incomplete work according to the sprint-close state.
-- **FR-012**: The system MUST identify risks from issues marked by the configured Jira flag mechanism and from issues with no status change for the configured stale threshold.
-- **FR-013**: The system MUST document and apply a consistent rule for point totals and completion percentage. If committed points are zero or unavailable, the completion percentage MUST be shown as unavailable rather than divided by zero or fabricated.
-- **FR-014**: The system MUST identify unavailable historical status data or other source-data limitations that prevent a reliable sprint-close classification.
+- **FR-018**: The React application MUST obtain sprint data only through the Express API; browser code MUST NOT connect directly to PostgreSQL or Jira.
+- **FR-019**: Phase one MUST provide read-only dashboard APIs backed by PostgreSQL and MUST NOT expose write endpoints for sprint or issue data.
+- **FR-020**: The API MUST derive status counts, workload, completion, remaining points, and current scope from validated persisted records rather than trusting client-calculated aggregates.
+- **FR-021**: The API MUST validate database results against required response schemas and return safe, actionable errors without SQL details, stack traces, or secrets.
+- **FR-022**: The API MUST return an as-of timestamp and data freshness indicator with each dashboard snapshot. Data older than 24 hours is stale by default; the threshold MUST be configurable through server-side configuration.
 
-### Draft and Report Content
+## API Contracts
 
-- **FR-015**: The system MUST generate a Markdown report with sections in this order: sprint metadata; executive summary; velocity and points metrics; completed work; carried-over or incomplete work; risks and blockers; detailed appendix.
-- **FR-016**: The executive summary MUST use plain language and MUST omit issue keys and technical jargon. Issue-level details MUST remain in the detailed appendix.
-- **FR-017**: The report MUST include committed points, completed points, and completion percentage when source data permits.
-- **FR-018**: The completed-work table MUST include issue key, summary, type, and points when available. The incomplete-work table MUST identify issues not completed at sprint close. Risk entries MUST include an available reason.
-- **FR-019**: The system MUST save each generated draft and its source sprint identity, generation time, and relevant source data or snapshot needed to explain the generated result.
-- **FR-020**: The user MUST be able to review and edit the generated Markdown, save reviewed changes, and download the draft as a Markdown file.
-- **FR-021**: The system MUST allow the user to return an externally edited Markdown draft to the review workflow and save that content before publication.
-- **FR-022**: Generating or saving a draft MUST NOT publish anything to Confluence.
+All endpoints use the `/api/v1` prefix and JSON. During local development, Vite proxies `/api` requests to Express. Phase one is read-only and bound to the local development environment; it has no authentication because it uses fictional data only.
 
-### Publishing and History
+| Method and endpoint | Request | Response/data destination |
+|---|---|---|
+| `GET /api/v1/health` | No body or query parameters. | `200` readiness response with application and database status; no credentials or internal connection strings. Return `503` when the database is not ready. |
+| `GET /api/v1/dashboard` | No body or query parameters; the configured project and active sprint determine the result. | `200` dashboard snapshot assembled from `projects`, `teams`, `team_members`, `sprints`, `sprint_scope_changes`, `issues`, and `burndown_snapshots`. |
 
-- **FR-023**: The system MUST require an explicit user confirmation immediately before creating a Confluence page and MUST display the destination, title, and content to be published.
-- **FR-024**: The system MUST convert the reviewed Markdown into the Confluence representation required by the configured Confluence API.
-- **FR-025**: The system MUST create a new child page under the configured parent page in the configured space; it MUST NOT overwrite a previously published report page.
-- **FR-026**: The page title MUST follow `<Project Name> - <Sprint Name> Summary` unless the project configures an equivalent title convention.
-- **FR-027**: The system MUST record publication status, page title, page URL when available, publication time, and the draft version used for the publish attempt.
-- **FR-028**: A retry of one publish operation MUST be idempotent or otherwise checked against its operation identity so transient failures do not create unintended duplicate pages. A separate, newly confirmed publish action MAY create a new page.
-- **FR-029**: The system MUST provide a report history view that distinguishes drafts, failed attempts, and successful publications.
+The dashboard response contract is:
 
-## Key Entities
+```json
+{
+	"asOf": "2026-09-28T16:00:00Z",
+	"freshness": "current",
+	"project": {
+		"id": "11111111-1111-4111-8111-111111111111",
+		"name": "Staff Augment Project",
+		"type": "Staff Augment"
+	},
+	"team": {
+		"id": "22222222-2222-4222-8222-222222222222",
+		"name": "Platform Team",
+		"memberCount": 10
+	},
+	"sprint": {
+		"id": "33333333-3333-4333-8333-333333333333",
+		"key": "TEAM-24",
+		"name": "Sprint 24",
+		"goal": "Example sprint goal",
+		"startDate": "2026-09-21",
+		"endDate": "2026-10-02",
+		"state": "active"
+	},
+	"summary": {
+		"originalCommittedPoints": 72,
+		"currentScopePoints": 78,
+		"netScopeChangePoints": 6,
+		"completedPoints": 42,
+		"remainingPoints": 36,
+		"completionPercent": 53.85,
+		"elapsedWorkingDays": 6,
+		"totalWorkingDays": 10,
+		"workingDaysRemaining": 4,
+		"unestimatedIssueCount": 1
+	},
+	"scopeChanges": [
+		{ "date": "2026-09-24", "direction": "added", "points": 6 }
+	],
+	"burndown": [
+		{ "date": "2026-09-21", "idealRemainingPoints": 72, "actualRemainingPoints": 78 },
+		{ "date": "2026-09-22", "idealRemainingPoints": 64, "actualRemainingPoints": 72 },
+		{ "date": "2026-09-23", "idealRemainingPoints": 56, "actualRemainingPoints": 66 },
+		{ "date": "2026-09-24", "idealRemainingPoints": 48, "actualRemainingPoints": 70 },
+		{ "date": "2026-09-25", "idealRemainingPoints": 40, "actualRemainingPoints": 54 },
+		{ "date": "2026-09-28", "idealRemainingPoints": 32, "actualRemainingPoints": 36 }
+	],
+	"statusBreakdown": [
+		{ "status": "To Do", "issueCount": 3, "estimatedPoints": 12 }
+	],
+	"workload": [
+		{
+			"assigneeId": "44444444-4444-4444-8444-444444444444",
+			"assigneeName": "Example Teammate",
+			"assignedPoints": 13,
+			"completedPoints": 8,
+			"remainingPoints": 5
+		}
+	],
+	"issues": [
+		{
+			"id": "55555555-5555-4555-8555-555555555555",
+			"key": "TEAM-123",
+			"summary": "Example issue",
+			"assigneeId": "44444444-4444-4444-8444-444444444444",
+			"assigneeName": "Example Teammate",
+			"status": "In Progress",
+			"priority": "High",
+			"storyPoints": 5,
+			"flagged": false
+		}
+	]
+}
+```
 
-- **Project Configuration**: Non-secret Jira project and board identifiers, Confluence space and parent identifiers, project/team display names, and report policy settings. Credentials are not part of this persisted entity.
-- **Sprint**: Jira sprint identifier, name, dates, goal, board association, and lifecycle state used to identify the report period.
-- **Issue Snapshot**: The issue attributes used to calculate and render a report, including status and available point, assignee, type, and summary values.
-- **Report Draft**: A generated report's Markdown content, source sprint, source snapshot or reference, generation time, review state, and saved revision metadata.
-- **Publish Operation**: The confirmed publish request, associated draft revision, operation identity, status, timestamps, and resulting Confluence page details when successful.
+The example is illustrative; its arrays show representative entries and MUST be fully populated in actual responses. Internally consistent values MUST be enforced by tests; actual seed totals may differ. `GET /api/v1/dashboard` returns the active-sprint issue set so the browser can apply the three filters together without additional requests. It MUST NOT return credentials or unrelated team/project data. UUIDs are serialized as canonical UUID strings.
+
+### API Errors
+
+- `404 ACTIVE_SPRINT_NOT_FOUND`: no active sprint exists for the configured project.
+- `503 DATABASE_UNAVAILABLE`: PostgreSQL is unavailable or not ready.
+- `500 DASHBOARD_DATA_INVALID`: persisted or computed data fails validation.
+- Error response shape: `{ "error": { "code": "...", "message": "...", "requestId": "..." } }`.
+- Client messages MUST be actionable and safe. Server logs MAY contain diagnostic context but MUST NOT expose secrets or unnecessary personal data.
+
+## UI Screens
+
+Phase one has one read-only route, `/`, with a single dashboard page. It has no separate sprint-selection, configuration, administration, or issue-editing screen.
+
+### Sprint Dashboard (`/`)
+
+1. **Context header**: Staff Augment project name/type, team name, active sprint key/name, goal, date range, and as-of/freshness label.
+2. **Sprint summary**: original commitment, current scope, net scope change, completed and remaining points, completion percentage, elapsed working days, and working days remaining.
+3. **Pace and burndown**: completion relative to elapsed sprint time; ideal and actual remaining-points lines; accessible textual summary of the chart.
+4. **Status and blockers**: issue count and point totals by standard status, plus a clearly labeled blocked count/list driven only by the flagged field.
+5. **Team workload**: all 10 members with assigned, completed, and remaining points; unassigned points shown separately; no ranking or utilization label.
+6. **Issue details**: issue table with key, summary, assignee, status, priority, points, and blocked marker. Status and assignee dropdowns plus a Blocked only toggle apply together and update result count.
+
+The page MUST provide loading, no-active-sprint, stale-data, recoverable error, empty-filter, and loaded states. Layout is desktop-first and responsive; the issue table MAY scroll horizontally inside its own container on narrow screens, but the page MUST NOT overflow horizontally.
+
+## Data Model
+
+PostgreSQL is the source of truth for the local dashboard snapshot. The seed process imports fictional JSON fixtures into the relational schema. Field names below are logical names; physical database names MUST use `snake_case` and IDs MUST use UUIDs.
+
+| Entity/table | Fields and types | Constraints and purpose |
+|---|---|---|
+| `teams` | `id UUID`, `name VARCHAR(120)` | `id` is the primary key; one configured team for phase one. |
+| `projects` | `id UUID`, `team_id UUID`, `name VARCHAR(160)`, `project_type VARCHAR(50)` | `id` is the primary key; `team_id` references `teams.id`; project type is `Staff Augment`. |
+| `team_members` | `id UUID`, `team_id UUID`, `display_name VARCHAR(160)`, `is_active BOOLEAN` | `id` is the primary key; `team_id` references `teams.id`; phase-one seed has exactly 10 active members. |
+| `sprints` | `id UUID`, `project_id UUID`, `external_key VARCHAR(100)`, `name VARCHAR(160)`, `goal TEXT NULL`, `state VARCHAR(20)`, `start_date DATE`, `end_date DATE`, `as_of_at TIMESTAMPTZ`, `original_committed_points NUMERIC(8,2)` | `id` is the primary key; `project_id` references `projects.id`; one active sprint for phase one; points are non-negative; `external_key` may be synthetic in mock data. |
+| `sprint_scope_changes` | `id UUID`, `sprint_id UUID`, `effective_at TIMESTAMPTZ`, `direction VARCHAR(10)`, `points NUMERIC(8,2)`, `reason TEXT NULL` | `id` is the primary key; `sprint_id` references `sprints.id`; direction is `added` or `removed`; points are positive and contribute signed points to net scope change. |
+| `issues` | `id UUID`, `sprint_id UUID`, `external_key VARCHAR(100)`, `summary VARCHAR(500)`, `assignee_id UUID NULL`, `status VARCHAR(80)`, `priority VARCHAR(40) NULL`, `story_points NUMERIC(8,2) NULL`, `flagged BOOLEAN`, `updated_at TIMESTAMPTZ` | `id` is the primary key; `sprint_id` references `sprints.id`; nullable `assignee_id` references `team_members.id`; `(sprint_id, external_key)` is unique; points are nullable/non-negative; `flagged` is the sole blocked indicator. |
+| `burndown_snapshots` | `id UUID`, `sprint_id UUID`, `snapshot_date DATE`, `actual_remaining_points NUMERIC(8,2)` | `id` is the primary key; `sprint_id` references `sprints.id`; `(sprint_id, snapshot_date)` is unique; points are non-negative. Ideal points are derived, not stored. |
+
+### Derived Values and Integrity Rules
+
+- `currentScopePoints` is the sum of non-null issue estimates in the active sprint. In the seed data it MUST equal `originalCommittedPoints + addedPoints - removedPoints` from scope-change events.
+- `completedPoints` is the sum of estimates for issues whose status maps to the `Done` group. `remainingPoints` is current scope minus completed points.
+- `completionPercent` is `completedPoints / currentScopePoints * 100`; return `null` when current scope is zero.
+- `netScopeChangePoints` is added points minus removed points. It MUST NOT overwrite the original commitment.
+- Per-member workload and status breakdown are derived from `issues`; they are not independently persisted aggregates.
+- The current-date burndown snapshot MUST equal remaining points for its as-of date. Historical snapshots MUST be supplied by the fictional fixture; the application MUST NOT synthesize actual history.
+- Unestimated issues remain in issue/status counts and are excluded from point totals. Unassigned issues remain in sprint totals and are grouped as Unassigned in workload output.
+- Database schema changes MUST be implemented through versioned migrations. Seed/reset behavior MUST be documented and repeatable.
+
+## Architecture and Constraints
+
+- **Frontend**: React 18.3.x and Vite 6.x in `apps/web`; feature UI in `apps/web/src/features/sprint-dashboard/`.
+- **Backend**: Node.js 22.x LTS and Express 5.x in `apps/api`; routes, services, repositories, and configuration follow `spec/constitution.md`.
+- **Database**: PostgreSQL 15.x in Docker; migrations in `database/migrations/`, seed fixtures in `database/seeds/`.
+- **Contracts**: shared API types/schema in `packages/contracts/`; API endpoint behavior and validation are tested at the boundary.
+- Exact patch versions and image digests MUST be pinned and CI-verified before implementation, per the constitution. This specification does not select unverified patches.
+- The existing `work/jira-sprint-dashboard` vanilla-JavaScript page is a visual prototype only and MUST NOT be treated as the target architecture. The separate `work/jira-dashboard` prototype remains untouched.
+- Phase one has no Jira adapter or credentials. A later Jira integration MUST be implemented in the Express backend and requires a separate clarified scope update.
+
+## Non-Functional Requirements
+
+- **Security**: local mock mode MUST contain no credentials or real client/team/issue data. Browser code MUST access data only through the API.
+- **Accessibility**: interactive controls MUST be keyboard-operable, labeled, and visibly focused. Charts MUST have accessible names/text alternatives; color alone MUST NOT communicate status.
+- **Responsive design**: desktop is primary; mobile remains usable with no page-level horizontal overflow.
+- **Reliability**: malformed data, zero-point scope, missing estimates, missing assignees, absent sprint, and database failure MUST produce deterministic values or explicit states, never fabricated values.
+- **Maintainability**: metric rules MUST be in testable domain services, not duplicated in React components and Express route handlers.
+
+## Out of Scope for Phase One
+
+- Live Jira API integration, credentials, synchronization, and automatic refresh.
+- Authentication, authorization, shared or public hosting, and client-facing access.
+- Editing, transitioning, or creating Jira issues.
+- Utilization, billable hours, time tracking, client allocation, performance ranking, or over-allocation claims.
+- Multiple projects/boards, sprint selection, or cross-team aggregation.
+- Notifications, forecasting guarantees, or automated recommendations.
 
 ## Success Criteria
 
-- **SC-001**: A Project Manager can select the latest closed sprint or a historical sprint and generate a complete draft without manually gathering issue data.
-- **SC-002**: Every generated report contains all seven required sections, in the specified order, whenever the required source data is available.
-- **SC-003**: In tests with known Jira fixtures, completed/incomplete classification and point metrics match expected results, including missing-point and zero-point cases.
-- **SC-004**: No automated generation or draft-save path creates a Confluence page; page creation occurs only after explicit confirmation.
-- **SC-005**: A confirmed publish produces a new child page with the expected title and parent, and the application records a working page link when returned by Confluence.
-- **SC-006**: Retrying the same publish operation does not create a second page, while a separately confirmed new publish can create a new historical page.
-- **SC-007**: Automated tests exercise report rules and publish safeguards without making live Jira or Confluence changes.
-- **SC-008**: No secrets appear in client responses, browser assets, persisted report content, or application logs in security tests.
+- **SC-001**: A clean local setup can start React/Vite, Express, and PostgreSQL 15 through documented Docker configuration and display seeded dashboard data.
+- **SC-002**: Dashboard summary values are derived from the API and reconcile with issue, scope-change, and burndown records.
+- **SC-003**: The page presents original commitment and current scope separately, including net scope change.
+- **SC-004**: The burndown displays actual historical snapshots and an ideal original-commitment line; the as-of actual equals current remaining points.
+- **SC-005**: All 10 active team members appear with correct assigned/completed/remaining point totals; unassigned work is distinct.
+- **SC-006**: Status, assignee, and flagged-only filters work independently and in combination and show an accurate result count and empty state.
+- **SC-007**: API errors and unavailable/stale data are visible and do not expose SQL, secrets, or fabricated metrics.
+- **SC-008**: Desktop and mobile browser checks confirm chart rendering, keyboard-accessible filters, readable layouts, and no page-level horizontal overflow.
+- **SC-009**: Automated tests cover metric calculation, scope changes, data integrity, API validation/errors, and fixture consistency without contacting Jira.
 
-## Assumptions
+## Assumptions and Clarifications Needed
 
-- The initial primary user is the Project Manager for the 12-person Staff Augment Project team.
-- The initial default report period is a closed Jira sprint on one configured board.
-- Jira and Confluence are accessed over their REST APIs using server-side credentials.
-- The system retains reports and publication metadata in PostgreSQL; Confluence remains the publication destination and history of published pages.
-- Markdown is the editable review format. The application provides download and re-import so a user can make edits outside the web interface.
-- `spec/constitution.md` is authoritative for the implementation stack and security requirements.
-
-## Out of Scope for V1
-
-- Scheduled, webhook-triggered, or unattended report generation and publication.
-- Automatic publication directly from report generation.
-- Next-sprint or look-ahead analysis.
-- Slack or email notifications.
-- Aggregation across multiple Jira projects, boards, or teams.
-- Release/version reporting; deferred until its source data, selection flow, metrics, and acceptance criteria are defined.
-
-## Dependencies and Constraints
-
-- React 18 + Vite frontend, Node.js + Express backend, PostgreSQL 15, and Docker are mandatory per `spec/constitution.md`.
-- Jira and Confluence service availability, API permissions, and rate limits constrain report generation and publication.
-- Schema changes require versioned migrations and a verification path.
-- Integration tests MUST use mocks or isolated test data and MUST NOT publish to a real stakeholder space as part of routine test runs.
-
-## Clarifications Needed
-
-| Topic | Current status | Required decision |
+| Topic | Status | Decision needed |
 |---|---|---|
-| Jira deployment | Open | Confirm Cloud versus Server/Data Center; this determines API version and authentication details. |
-| Jira project and board | Open | Supply the project key and board ID for the initial deployment. |
-| Confluence destination | Open | Supply the space key and parent page ID. |
-| Stale/blocked threshold | Open | Define the number of days and whether calendar or business days are counted. |
-| Flagged issue detection | Open | Confirm whether to use Jira's native Flagged field, a label, or both. |
-| Historical sprint status | Open | Confirm that Jira history/API permissions provide issue status at sprint close; define the visible limitation when unavailable. |
-| Release reporting | Resolved for V1 | V1 supports closed Jira sprints only; release/version reporting remains out of scope pending a separate scope update with selection, data, metrics, and acceptance criteria. |
-| Configuration administration | Open | Decide whether deployment settings are environment-only or editable by an authorized administrator in the UI. |
+| Jira connection | Deferred | Phase one is mock-only. Before live integration, confirm Jira Cloud versus Data Center, project/board IDs, API permissions, field mapping, and refresh strategy. |
+| Exact patch versions | Gate before implementation | Select and pin exact React, Vite, Node.js, Express, PostgreSQL image digest, Docker Engine, and Compose versions in the files required by the constitution. |
+| Project timezone | Open | Select a project timezone for working-day and as-of calculations before using real sprint dates. |
+| Freshness threshold | Defined with configurable default | Data older than 24 hours is stale unless the server configuration sets another approved threshold. |
+| Shared team access | Deferred | Phase one runs locally; choose approved hosting and access controls before the team uses real data. |
+| Status mapping | Assumed | Map Jira statuses to `To Do`, `In Progress`, `In Review`, and `Done`; confirm actual board status names before live integration. |
+| Missing story points | Defined | Exclude from point totals, retain issue counts, and label as unestimated. |
+| Workload interpretation | Defined | Assigned/completed points are context only; do not infer capacity, utilization, or performance. |
 
 ## Constitution Check
 
-- The requested stack is specified and replaces the Python CLI design in the older `project_spec.md`.
-- Jira/Confluence credentials remain server-side, and the browser communicates only with the application API.
-- Draft generation and review are separate from explicit Confluence publishing.
-- Tests avoid live service side effects; publication retries and report history are specified.
-- No requirement silently chooses values for the unresolved Jira, Confluence, or stale-issue policy decisions above.
+- The specification uses the constitution's React/Vite, Node/Express, PostgreSQL, and Docker boundaries.
+- Jira access is deferred; when introduced, it belongs behind the Express API.
+- Database entities, derived metrics, API payloads, and UI states are defined before implementation.
+- The 10-person staff-augmentation context and individual-workload privacy constraints are explicit.
+- Exact patch versions remain an implementation-readiness gate, not an implicit assumption.
