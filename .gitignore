@@ -20,5 +20,10 @@ env/
 .vscode/
 .idea/
 
+# Dependencies and build output
+node_modules/
+dist/
+**/dist/
+
 # Accidental OS artifact folders (unexpanded %SystemDrive% path bug)
 %SystemDrive%/
