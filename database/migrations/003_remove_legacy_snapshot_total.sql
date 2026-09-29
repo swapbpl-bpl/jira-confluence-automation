@@ -1,0 +1,1 @@
+ALTER TABLE burndown_snapshots DROP COLUMN IF EXISTS completed_points;

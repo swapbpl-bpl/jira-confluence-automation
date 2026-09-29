@@ -3,11 +3,21 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "engines": {
     "node": "22.15.0"
   },
   "scripts": {
-    "check:toolchain": "node -p \"process.versions.node\""
+    "check:toolchain": "node -p \"process.versions.node\"",
+    "build": "tsc -p tsconfig.json"
   },
   "devDependencies": {
     "typescript": "5.7.3"

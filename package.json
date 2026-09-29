@@ -12,10 +12,13 @@
   "packageManager": "npm@10.9.2",
   "scripts": {
     "toolchain:verify": "node -e \"const fs=require('fs'); const toolchain=JSON.parse(fs.readFileSync('.toolchain.json', 'utf8')); const root=require('./package.json'); if (root.engines.node !== toolchain.node) throw new Error('Node engine mismatch'); console.log('Toolchain pin verified');\"",
-    "dev:api": "npm --prefix apps/api run dev",
-    "dev:web": "npm --prefix apps/web run dev",
-    "build:web": "npm --prefix apps/web run build",
-    "build:api": "npm --prefix apps/api run build",
-    "test": "tsx --test tests/**/*.test.ts"
+    "dev:api": "npm run build:contracts && npm --prefix apps/api run dev",
+    "dev:web": "npm run build:contracts && npm --prefix apps/web run dev",
+    "build:contracts": "npm --prefix packages/contracts run build",
+    "build:web": "npm run build:contracts && npm --prefix apps/web run build",
+    "build:api": "npm run build:contracts && npm --prefix apps/api run build",
+    "build": "npm run build:contracts && npm --prefix apps/api run build && npm --prefix apps/web run build",
+    "db:setup": "node scripts/setup_database.mjs",
+    "test": "npm run build:contracts && tsx --test tests/**/*.test.ts"
   }
 }

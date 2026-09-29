@@ -1,9 +1,18 @@
 import { Router } from 'express';
+import type { Pool } from 'pg';
 
-import { getDashboardFixture } from '../dashboard.js';
+import { getDashboard } from '../services/dashboard.service.js';
 
-export const dashboardRouter = Router();
+export function createDashboardRouter(pool: Pool) {
+  const dashboardRouter = Router();
 
-dashboardRouter.get('/dashboard', (_req, res) => {
-  res.json(getDashboardFixture());
-});
+  dashboardRouter.get('/dashboard', async (_req, res, next) => {
+    try {
+      res.json(await getDashboard(pool));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  return dashboardRouter;
+}

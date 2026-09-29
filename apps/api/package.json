@@ -13,11 +13,15 @@
     "start": "node dist/server.js"
   },
   "dependencies": {
-    "express": "5.1.0"
+    "@hello-genai/contracts": "0.1.0",
+    "dotenv": "16.4.7",
+    "express": "5.1.0",
+    "pg": "8.13.1"
   },
   "devDependencies": {
     "@types/express": "5.0.0",
     "@types/node": "22.15.0",
+    "@types/pg": "8.11.11",
     "tsx": "4.19.2",
     "typescript": "5.7.3"
   }

@@ -1,66 +1,88 @@
-# Implementation Verification Checklist
+# Checklist Disposition
 
-- **Specification reviewed**: `spec/specification.md`
-- **Check date**: 2026-09-28
-
-## Result
-
-The current application is a scaffold, not a runnable implementation. None of the 29 functional requirements could be confirmed as implemented. Runtime behavior is therefore **not verifiable** for every requirement; absence of a failing runtime test is not evidence of passing behavior.
-
-Evidence inspected:
-
-- The API entry point [server.ts](../apps/api/src/server.ts), web entry points [App.tsx](../apps/web/src/App.tsx) and [main.tsx](../apps/web/src/main.tsx), and shared contracts [index.ts](../packages/contracts/src/index.ts) are empty.
-- No JavaScript package manifests were found, so there are no app scripts with which to build, start, lint, or test the product.
-- No application test files, Docker/Compose configuration, or SQL migration files were found.
-- The Jira/Confluence service, route, and web feature directories contain placeholders only.
-
-No backend/frontend server or database was started: the required runnable application and scripts are absent.
+- **Specification**: [specification.md](specification.md)
+- **Reviewed**: 2026-09-29
+- **Result**: Every phase-one functional requirement has been implemented and checked against the local fictional PostgreSQL snapshot. No known in-scope implementation blocker remains.
 
 ## Functional Requirements
 
-| ID | Implemented? | Does it work? | Evidence / reason |
-|---|---|---|---|
-| FR-001 | No | Not verifiable | React/Vite, Express, and PostgreSQL application setup is absent; no package manifests or Docker configuration. |
-| FR-002 | No | Not verifiable | The Express entry point is empty; no Jira, Confluence, or database access boundary exists. |
-| FR-003 | No | Not verifiable | No server-side credential loader or browser build exists to inspect for secret exposure. |
-| FR-004 | No | Not verifiable | No application configuration validation or safe error handling is implemented. |
-| FR-005 | No | Not verifiable | No configured Jira project/board or Confluence site/space/parent is consumed by the application. |
-| FR-006 | No | Not verifiable | No Atlassian adapters or permission configuration exist to verify least privilege. |
-| FR-007 | No | Not verifiable | No external-service calls, timeout handling, retry behavior, or rate-limit handling exist. |
-| FR-008 | No | Not verifiable | No Jira sprint-list endpoint or latest-closed-sprint selection exists. |
-| FR-009 | No | Not verifiable | No historical sprint selection by ID or name exists. |
-| FR-010 | No | Not verifiable | No sprint or issue data is retrieved from Jira. |
-| FR-011 | No | Not verifiable | No completed/incomplete classification or sprint-close history logic exists. |
-| FR-012 | No | Not verifiable | No flag or stale-issue risk detection exists. |
-| FR-013 | No | Not verifiable | No committed/completed point calculation or completion percentage exists. |
-| FR-014 | No | Not verifiable | No historical-data limitation or incomplete-source representation exists. |
-| FR-015 | No | Not verifiable | No Markdown report generator or required section assembly exists. |
-| FR-016 | No | Not verifiable | No executive-summary generation or issue-key exclusion rule exists. |
-| FR-017 | No | Not verifiable | No report metrics are generated. |
-| FR-018 | No | Not verifiable | No completed/incomplete/risk tables or issue appendix are generated. |
-| FR-019 | No | Not verifiable | No PostgreSQL schema, migration, repository, draft storage, or source snapshot exists. |
-| FR-020 | No | Not verifiable | No draft review/editor, save workflow, or Markdown download exists. |
-| FR-021 | No | Not verifiable | No Markdown import or externally edited draft workflow exists. |
-| FR-022 | No | Not verifiable | No generation/save workflow exists, so the no-publish side-effect guarantee cannot be exercised. |
-| FR-023 | No | Not verifiable | No publish confirmation UI or backend confirmation guard exists. |
-| FR-024 | No | Not verifiable | No Markdown-to-Confluence conversion exists. |
-| FR-025 | No | Not verifiable | No Confluence page-creation integration exists. |
-| FR-026 | No | Not verifiable | No page title generation exists. |
-| FR-027 | No | Not verifiable | No publish status, page metadata, timestamps, or draft-revision association is persisted. |
-| FR-028 | No | Not verifiable | No publish operation identity, idempotency, or reconciliation behavior exists. |
-| FR-029 | No | Not verifiable | No report or publication history API/UI exists. |
+| ID | Disposition | Implementation / verification |
+|---|---|---|
+| FR-001 | Resolved | The seed runner validates exactly one project/team, 10 active members, and one active sprint; the API rejects invalid counts. A partial unique index prevents multiple active sprints per project. |
+| FR-002 | Resolved | Dashboard context displays project/type, team/size, sprint/key/goal/date range, and UTC as-of/freshness in [SprintDashboard.tsx](../apps/web/src/features/sprint-dashboard/SprintDashboard.tsx). |
+| FR-003 | Resolved | Summary shows baseline, current/net scope, completed/remaining, completion, elapsed/total/remaining workdays, expected completed points, and pace variance. |
+| FR-004 | Resolved | [dashboard.service.ts](../apps/api/src/services/dashboard.service.ts) derives scope and completion from issue estimates, excludes null estimates, and validates remaining-point consistency. |
+| FR-005 | Resolved | Completion percentage uses PostgreSQL `ROUND(..., 2)` and is `null` for zero scope; UI renders `Unavailable`. |
+| FR-006 | Resolved | Kickoff commitment is stored separately; the seed contains only fixed kickoff estimates and add/remove events. The API is read-only. |
+| FR-007 | Resolved | UTC weekday calculations use inclusive sprint bounds; the chart derives the ideal line and includes the virtual day-zero baseline. Weekend, missing, and out-of-period snapshots are rejected. |
+| FR-008 | Resolved | Actual points come only from dated database snapshots. Every working day through `asOf` is required and the latest actual must reconcile with current remaining points; invalid data returns `DASHBOARD_DATA_INVALID`. |
+| FR-009 | Resolved | Expected points and variance are derived from original commitment and elapsed/total working days; the UI describes pace as a directional signal, not a prediction. |
+| FR-010 | Resolved | Unestimated issue count remains visible, null estimates are excluded from totals, and the issue table labels each as `Unestimated`. |
+| FR-011 | Resolved | API derives all four status rows, including zero rows, from the current issue set; UI presents counts and point totals. |
+| FR-012 | Resolved | The database constrains supported statuses; blocker state comes only from `flagged`, with no summary-text inference. |
+| FR-013 | Resolved | Workload is derived per issue for all 10 active members, including zero-point members; unassigned points appear separately only when present. |
+| FR-014 | Resolved | Workload is labeled as context and not as utilization, performance, ranking, or over-allocation. |
+| FR-015 | Resolved | Issue table includes key, summary, assignee, status, priority, points, and explicit flagged state. |
+| FR-016 | Resolved | Status, assignee, and blocked-only controls combine with AND semantics, update the count, support clearing, and show a zero-result empty state. Combined filters and keyboard status selection were exercised in the browser. |
+| FR-017 | Resolved | UI provides loading, loaded, stale, no-active-sprint, empty-active-sprint, empty-filter, invalid-data, and retryable error states. |
+| FR-018 | Resolved | Browser obtains dashboard data only through the Express API and validates it with the shared runtime contract. |
+| FR-019 | Resolved | Express exposes read-only GET routes backed by PostgreSQL; no sprint or issue write route exists. |
+| FR-020 | Resolved | Repository reads and domain calculations run in one PostgreSQL `REPEATABLE READ READ ONLY` transaction. |
+| FR-021 | Resolved | Shared request/response types and runtime guards are in [packages/contracts/src/index.ts](../packages/contracts/src/index.ts); API validates before responding and the browser validates before rendering. Safe errors include a request ID and no SQL details. |
+| FR-022 | Resolved | `asOf` comes from the persisted snapshot timestamp; freshness is computed against the fixed 24-hour threshold. There is no refresh endpoint. |
+| FR-023 | Resolved | API reads the sole configured project and active sprint, returns `404 ACTIVE_SPRINT_NOT_FOUND` when absent, and returns an empty issue set for a valid empty sprint. |
+| FR-024 | Resolved | One database query returns the complete active-sprint issue set; filtering is client-side. |
+| FR-025 | Resolved | API and Vite bind to `127.0.0.1`; desktop/mobile browser checks used loopback. |
+| FR-026 | Resolved | Health executes `SELECT 1`, returning `200 {"status":"ready"}` or safe `503 {"status":"not_ready"}`. UI does not use it as a preflight. Both responses are covered by API tests. |
+| FR-027 | Resolved | Manual Retry is available only for network failures and HTTP 503. No automatic retry occurs; 404 maps to no active sprint and invalid-data errors are non-retryable. |
 
-## User Stories and Success Criteria
+## Stories And Success Criteria
 
-| Area | Implemented? | Does it work? | Evidence / reason |
-|---|---|---|---|
-| User Story 1: Configure and connect services | No | Not verifiable | No configuration UI/API or service adapters. |
-| User Story 2: Generate a sprint summary | No | Not verifiable | No sprint listing, Jira fetch, report generation, or draft persistence. |
-| User Story 3: Review and edit a draft | No | Not verifiable | No editor, save, download, import, or reload workflow. |
-| User Story 4: Explicitly publish a reviewed report | No | Not verifiable | No confirmation workflow or Confluence publishing implementation. |
-| User Story 5: Inspect report and publication history | No | Not verifiable | No persistence-backed history endpoint or UI. |
-| SC-001 through SC-008 | No | Not verifiable | These criteria depend on missing application behavior and tests; none has executable evidence in the repository. |
+| Area | Disposition | Evidence |
+|---|---|---|
+| User Story 1: Active sprint overview | Resolved | Context, metrics, loading, empty-sprint and no-sprint states are present; live seed page was checked. |
+| User Story 2: Pace and scope movement | Resolved | Derived baseline/scope/pace, dated changes, daily actual snapshots, and textual chart description are present and internally validated. |
+| User Story 3: Team workload | Resolved | All 10 members and the unassigned group reconcile to issue data; no ranking or utilization inference is shown. |
+| User Story 4: Issues, statuses, blockers | Resolved | Full issue table and all three combinable filters work, including zero results and a flagged-vs-summary-text fixture. |
+| User Story 5: Data/service recovery | Resolved | Loading, stale, safe errors, no-sprint state, and user-triggered retry are implemented; mocked 503 retry/recovery was exercised in the browser. |
+| SC-001 | Resolved | [README.md](../README.md) documents PostgreSQL, migrations/seed, API/web startup, and validation commands. |
+| SC-002 | Resolved | Live response reconciles to 78 scope, 42 completed, 36 remaining, 53.85%, and the latest 36-point snapshot. |
+| SC-003 | Resolved | UI shows the original 72-point baseline, current 78-point scope, and dated +6-point scope event. |
+| SC-004 | Resolved | Chart renders actual end-of-day snapshots and ideal original-baseline pace; service rejects missing or inconsistent snapshots. |
+| SC-005 | Resolved | Live UI displays all 10 members and the separate 2-point unassigned group. |
+| SC-006 | Resolved | Combined filters, counts, empty state, and keyboard operation were browser-tested. |
+| SC-007 | Resolved | Safe API errors, stale label, no fabricated metrics, and retry policy are implemented; boundary tests cover service failures. |
+| SC-008 | Resolved | Browser checks at 1425px and 375px showed no page overflow; chart, controls, and contained table scrolling rendered and operated. |
+| SC-009 | Resolved | Eight automated tests cover metrics, zero scope, scope/snapshot integrity, readiness, no-active-sprint, and safe database errors. Seed setup also validates fixture consistency transactionally. |
+| SC-010 | Resolved | Loopback listeners, live health response, and user-only retry behavior were verified. |
+| SC-011 | Resolved | Axe WCAG 2.0/2.1/2.2 A/AA scan reported zero violations at desktop and mobile; visible focus, keyboard filters, named chart, and focusable scroll regions are present. |
 
-## Verification Needed
+## Non-Functional Requirements
 
-Before behavior can be retested, establish the runnable React/Vite and Express workspace, PostgreSQL 15 Docker service, migrations, and automated tests. Then verify requirements incrementally with mocked Jira/Confluence services; reserve live publishing checks for a deliberate non-production sandbox run. Resolve the open product/data decisions in the specification before treating data-dependent requirements as testable.
+| Area | Disposition | Evidence |
+|---|---|---|
+| Stack, pins, reproducibility | Resolved | Exact Node/npm/React/Vite/Express/PostgreSQL pins and lockfile are used; root commands build contracts and the setup runner applies ordered SQL migrations. |
+| Data security | Resolved | Browser has no database/Jira access; DB URL is required via ignored `.env` or environment, Compose requires a local password, and only fictional seed data is committed. |
+| Accessibility | Resolved | Axe scan found zero WCAG A/AA violations at desktop/mobile; keyboard focus and text alternatives are included. |
+| Responsive layout | Resolved | No page-level overflow at 1425px or 375px; wide tables/chart scroll within named focusable regions. |
+| Reliability | Resolved | Repeatable-read transaction, seed integrity gate, response validation, deterministic errors, and zero/missing-estimate behavior are implemented. |
+| Maintainability | Resolved | Persistence, metric service, routes, contracts, app shell, and sprint feature have separate ownership boundaries. |
+
+## Out Of Scope
+
+These are intentional phase-one exclusions, not open implementation gaps: live Jira connectivity or credentials; authentication/authorization; remote or public hosting; issue creation/editing/transitions; multiple projects/teams or sprint selectors; pagination and production-scale/load guarantees; roster administration; notifications or forecast guarantees; time tracking, utilization, performance ranking, or over-allocation claims.
+
+## Nice To Have
+
+- Add persistent Playwright/Axe browser regression tests to CI; current filter, retry, viewport, and accessibility checks were run in the browser during this review.
+- Repeat manual assistive-technology testing with screen readers and zoom settings; automated WCAG scan and keyboard checks currently pass.
+
+## Verification Run
+
+- `npm run build` — passed for contracts, API, and web.
+- `npm test` — 8 passed, 0 failed.
+- `npm run db:setup` — migrations and seed applied; transaction integrity checks passed.
+- Live health — `200 {"status":"ready"}`.
+- Live dashboard — `currentScope=78`, `completed=42`, `remaining=36`, `issues=11`, `workload=11`, `freshness=current`.
+- Browser — combined filter returned the flagged unassigned issue; empty-filter returned `0 of 11`; keyboard status selection and mocked 503 retry/recovery passed.
+- Axe WCAG A/AA — 0 violations at desktop and mobile. Page overflow — none at either viewport.
