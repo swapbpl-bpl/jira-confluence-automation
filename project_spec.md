@@ -29,7 +29,7 @@ Build a standalone dashboard for a Project Manager overseeing a 10-person team o
 - Fictional but realistic mock data for a 10-person team.
 - Desktop-first responsive dashboard with a clean operational visual style.
 - Sprint summary, progress-versus-time, burndown, status distribution, blockers, per-person point workload, and issue details.
-- Local static web implementation with no authentication or build step.
+- Local React/Vite frontend, Express API, and PostgreSQL database running through Docker; phase one requires no Jira credentials or live Jira connection.
 
 ### Out of Scope for Phase One
 
@@ -84,7 +84,7 @@ Build a standalone dashboard for a Project Manager overseeing a 10-person team o
 
 ## 6. Data Model
 
-Use local JSON data loaded by the browser. The schema should keep the eventual Jira adapter separate from rendering logic.
+Use fictional JSON seed fixtures to initialize local PostgreSQL data. The browser must retrieve sprint data only through the Express API; keep the eventual Jira adapter separate from rendering logic.
 
 ```json
 {
@@ -131,12 +131,13 @@ The actual mock dataset must contain 10 distinct team members and enough daily b
 
 ## 7. Technical Architecture
 
-- Deliver as a standalone static web app in a separate dashboard directory; do not modify the existing `work/jira-dashboard` prototype.
-- Use semantic HTML, CSS, and vanilla JavaScript with JSON loaded via `fetch` from a local HTTP server.
-- Render charts using SVG or another dependency-free browser-native approach unless a later requirement justifies a chart library.
-- Keep data loading, metric calculation, chart rendering, and filtering in separable functions so the mock data source can later be replaced by a Jira adapter.
-- No server-side component, package installation, or build step is required for phase one.
-- Document the local run command and supported browser assumptions.
+- The target application MUST use React 18.3.x with Vite 6.x, Node.js 22.x LTS with Express 5.x, and PostgreSQL 15.x via Docker Engine 27.x or later and Docker Compose v2.x, as governed by `spec/constitution.md`.
+- The React application belongs in `apps/web`; the Express API belongs in `apps/api`; shared request/response contracts belong in `packages/contracts`; database migrations and fictional seed fixtures belong in `database/migrations` and `database/seeds`.
+- The browser MUST call the Express API for sprint data. The API owns PostgreSQL access and will own the Jira adapter when live Jira integration is approved.
+- Phase one MUST seed PostgreSQL with fictional sprint data and MUST NOT require Jira credentials or make live Jira calls.
+- Keep metric calculations in testable domain modules rather than React components or Express route handlers. Keep chart rendering and issue filtering in feature-owned frontend modules.
+- The existing `work/jira-sprint-dashboard` static implementation is a UX prototype only and is not the target architecture. Do not modify the separate `work/jira-dashboard` prototype as part of this feature.
+- Document Docker-based local startup, frontend/API URLs, seed/reset procedure, and supported browser assumptions.
 
 ## 8. UX, Accessibility, and Responsive Behavior
 

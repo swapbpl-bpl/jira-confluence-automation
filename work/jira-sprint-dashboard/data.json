@@ -1,0 +1,30 @@
+{
+  "sprint": {
+    "key": "PLAT-24",
+    "name": "Sprint 24: Atlas",
+    "team": "Platform Enablement",
+    "startDate": "2026-09-21",
+    "endDate": "2026-10-02",
+    "asOf": "2026-09-28",
+    "goal": "Make platform changes safer to ship",
+    "remainingPoints": [72, 68, 64, 58, 52, 30, null, null, null, null]
+  },
+  "issues": [
+    { "key": "PLAT-241", "title": "Add cursor pagination to the events API", "assignee": "Avery Chen", "status": "Done", "points": 8, "priority": "High", "blocked": false },
+    { "key": "PLAT-244", "title": "Expose feature-flag evaluation metrics", "assignee": "Morgan Lee", "status": "Done", "points": 5, "priority": "Medium", "blocked": false },
+    { "key": "PLAT-248", "title": "Standardize service request tracing", "assignee": "Sam Patel", "status": "Done", "points": 5, "priority": "Medium", "blocked": false },
+    { "key": "PLAT-251", "title": "Export audit history to CSV", "assignee": "Quinn Brooks", "status": "Done", "points": 8, "priority": "High", "blocked": false },
+    { "key": "PLAT-253", "title": "Add retry policy to event consumers", "assignee": "Avery Chen", "status": "Done", "points": 3, "priority": "Medium", "blocked": false },
+    { "key": "PLAT-255", "title": "Improve cache warm-up observability", "assignee": "Morgan Lee", "status": "Done", "points": 5, "priority": "Low", "blocked": false },
+    { "key": "PLAT-257", "title": "Add role audit events", "assignee": "Sam Patel", "status": "Done", "points": 5, "priority": "Medium", "blocked": false },
+    { "key": "PLAT-259", "title": "Document the release verification path", "assignee": "Quinn Brooks", "status": "Done", "points": 3, "priority": "Low", "blocked": false },
+    { "key": "PLAT-262", "title": "Add tenant isolation checks to export", "assignee": "Sam Patel", "status": "In Review", "points": 6, "priority": "High", "blocked": false },
+    { "key": "PLAT-264", "title": "Ship API key rotation audit trail", "assignee": "Morgan Lee", "status": "In Review", "points": 5, "priority": "High", "blocked": false },
+    { "key": "PLAT-267", "title": "Add idempotency keys to webhook delivery", "assignee": "Morgan Lee", "status": "In Progress", "points": 5, "priority": "High", "blocked": true, "blockerNote": "Waiting on the staging signing secret" },
+    { "key": "PLAT-269", "title": "Add latency thresholds to service alerts", "assignee": "Avery Chen", "status": "In Progress", "points": 3, "priority": "Medium", "blocked": false },
+    { "key": "PLAT-271", "title": "Support key rotation without downtime", "assignee": "Quinn Brooks", "status": "In Progress", "points": 2, "priority": "High", "blocked": false },
+    { "key": "PLAT-273", "title": "Add retention controls to audit search", "assignee": "Avery Chen", "status": "To Do", "points": 3, "priority": "Medium", "blocked": false },
+    { "key": "PLAT-275", "title": "Document customer-managed key setup", "assignee": "Sam Patel", "status": "To Do", "points": 3, "priority": "Low", "blocked": false },
+    { "key": "PLAT-277", "title": "Verify regional failover runbook", "assignee": "Quinn Brooks", "status": "To Do", "points": 3, "priority": "High", "blocked": true, "blockerNote": "Needs a production-like failover window" }
+  ]
+}

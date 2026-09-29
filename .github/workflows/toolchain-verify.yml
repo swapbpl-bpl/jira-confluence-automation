@@ -1,0 +1,61 @@
+name: Toolchain verification
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  verify-pins:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js from .nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Validate package pins and workspace manifests
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const toolchain = JSON.parse(fs.readFileSync('.toolchain.json', 'utf8'));
+          const root = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const api = JSON.parse(fs.readFileSync('apps/api/package.json', 'utf8'));
+          const web = JSON.parse(fs.readFileSync('apps/web/package.json', 'utf8'));
+          const contracts = JSON.parse(fs.readFileSync('packages/contracts/package.json', 'utf8'));
+
+          const required = {
+            node: toolchain.node,
+            npm: toolchain.npm,
+            react: toolchain.react,
+            vite: toolchain.vite,
+            express: toolchain.express,
+            typescript: toolchain.typescript,
+            pluginReact: toolchain.pluginReact,
+          };
+
+          if (root.engines.node !== required.node) throw new Error('Root Node engine mismatch.');
+          if (root.packageManager !== `npm@${required.npm}`) throw new Error('Root packageManager mismatch.');
+          if (api.dependencies.express !== required.express) throw new Error('API Express version mismatch.');
+          if (web.dependencies.react !== required.react) throw new Error('Web React version mismatch.');
+          if (web.dependencies['react-dom'] !== required.react) throw new Error('Web React DOM version mismatch.');
+          if (web.devDependencies.vite !== required.vite) throw new Error('Vite version mismatch.');
+          if (web.devDependencies['@vitejs/plugin-react'] !== required.pluginReact) throw new Error('Vite React plugin version mismatch.');
+          if (contracts.devDependencies.typescript !== required.typescript) throw new Error('Contracts TypeScript version mismatch.');
+          console.log('Toolchain package pins validated.');
+          NODE
+
+      - name: Install dependencies from lockfile
+        run: npm ci --workspaces --include-workspace-root
+
+      - name: Verify Docker database pin in compose config
+        run: |
+          grep -F "postgres:15.10@sha256:c92b7389491c7266493dfe2ba2c406b9ba3bd186e316283b987fd5fd2c110b45" docker-compose.yml
+          docker compose config > /tmp/docker-compose-rendered.yml
+          test -s /tmp/docker-compose-rendered.yml
+          echo "Docker Compose database pin validated."

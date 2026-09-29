@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f6f5">
+    <title>Sprint Pulse | PLAT Sprint 24</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="Sprint Pulse home">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span>Sprint<span class="brand-light">Pulse</span></span>
+        </a>
+        <div class="topbar-context">
+          <span class="context-label">TEAM WORKSPACE</span>
+          <span class="context-value"><span class="team-dot"></span> Platform Enablement</span>
+        </div>
+        <div class="topbar-right">
+          <span class="demo-badge"><span></span> Demo data</span>
+          <span class="avatar avatar-lead" title="Sprint lead: Alex Rivera">AR</span>
+        </div>
+      </header>
+
+      <main id="top" class="dashboard">
+        <section class="page-heading" aria-labelledby="sprint-title">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-line"></span> ACTIVE SPRINT <span id="sprint-key">PLAT-24</span></div>
+            <h1 id="sprint-title">Sprint 24: Atlas</h1>
+            <p class="sprint-meta"><span id="sprint-dates"></span><span class="meta-separator">/</span><span id="sprint-goal"></span></p>
+          </div>
+          <div class="sprint-status">
+            <span class="status-pulse" aria-hidden="true"></span>
+            <span>In progress</span>
+            <span class="status-divider"></span>
+            <span id="days-remaining">4 days left</span>
+          </div>
+        </section>
+
+        <section class="overview" aria-label="Sprint overview">
+          <div class="progress-panel">
+            <div class="progress-copy">
+              <div>
+                <p class="section-kicker">SPRINT COMPLETION</p>
+                <div class="headline-stat"><strong id="completion-percent">58%</strong><span>of current scope complete</span></div>
+              </div>
+              <div class="points-total"><strong id="points-complete">42</strong><span>/ <span id="points-total">72</span> pts</span></div>
+            </div>
+            <div class="progress-track" role="img" id="progress-track" aria-label="58 percent of sprint points complete">
+              <span id="progress-fill"></span>
+              <span id="progress-marker" aria-hidden="true"></span>
+            </div>
+            <div class="progress-foot">
+              <span><i class="legend-dot done-dot"></i> Points complete</span>
+              <span><i class="legend-dot elapsed-dot"></i> Sprint elapsed <strong id="elapsed-percent">60%</strong></span>
+              <span class="pace-note" id="pace-note">1.2 pts behind ideal pace</span>
+            </div>
+          </div>
+          <div class="metric-panel">
+            <div class="metric-topline"><span class="section-kicker">TEAM COMMITMENT</span><span class="metric-glyph" aria-hidden="true">SP</span></div>
+            <div class="metric-value"><strong id="team-points">72</strong><span>points</span></div>
+            <p class="metric-caption">Current sprint scope</p>
+            <div class="metric-subline"><span id="issue-count">16</span> issues in sprint</div>
+          </div>
+          <div class="metric-panel days-panel">
+            <div class="metric-topline"><span class="section-kicker">TIME REMAINING</span><span class="calendar-glyph" aria-hidden="true"><i></i><b></b></span></div>
+            <div class="metric-value"><strong id="days-value">4</strong><span>working days</span></div>
+            <p class="metric-caption"><span id="end-date-label">Ends Oct 2</span> <span class="metric-separator">·</span> Sprint day <span id="sprint-day">6</span> of 10</p>
+            <div class="week-strip" id="week-strip" aria-label="Sprint weekday progress"></div>
+          </div>
+        </section>
+
+        <section class="chart-grid" aria-label="Sprint charts">
+          <article class="panel burndown-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">EFFORT TREND</p>
+                <h2>Burndown</h2>
+              </div>
+              <div class="chart-legend"><span><i class="legend-line ideal-line"></i> Ideal</span><span><i class="legend-line actual-line"></i> Actual</span></div>
+            </div>
+            <p class="panel-subtitle">Remaining story points by sprint day</p>
+            <div class="chart-wrap" id="burndown-chart" role="img" aria-label="Burndown chart"></div>
+            <div class="chart-foot"><span>72 pts at start</span><span id="burndown-current">30 pts remaining today</span><span>0 pts</span></div>
+          </article>
+
+          <article class="panel status-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">WORK DISTRIBUTION</p>
+                <h2>Issue status</h2>
+              </div>
+              <span class="quiet-count"><strong id="status-total">16</strong> issues</span>
+            </div>
+            <div class="status-list" id="status-breakdown"></div>
+            <div class="status-foot"><span><i class="legend-dot blocked-dot"></i><strong id="blocked-total">2</strong> blocked issues</span><span>of <strong id="status-points">72</strong> pts in scope</span></div>
+          </article>
+        </section>
+
+        <section class="workload-panel panel" aria-labelledby="workload-title">
+          <div class="panel-heading workload-heading">
+            <div>
+              <p class="section-kicker">TEAM CAPACITY</p>
+              <h2 id="workload-title">Points by teammate</h2>
+            </div>
+            <div class="chart-legend"><span><i class="legend-dot workload-done"></i> Done</span><span><i class="legend-dot workload-open"></i> Remaining</span></div>
+          </div>
+          <div id="workload-list" class="workload-list"></div>
+        </section>
+
+        <section class="issues-section" aria-labelledby="issues-title">
+          <div class="issues-heading">
+            <div>
+              <p class="section-kicker">SPRINT BACKLOG</p>
+              <h2 id="issues-title">Issue detail <span id="visible-issue-count">16</span></h2>
+            </div>
+            <div class="filters" aria-label="Issue filters">
+              <label class="filter-control">
+                <span class="sr-only">Filter by status</span>
+                <select id="status-filter">
+                  <option value="all">All statuses</option>
+                  <option value="To Do">To Do</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="In Review">In Review</option>
+                  <option value="Done">Done</option>
+                </select>
+              </label>
+              <label class="filter-control">
+                <span class="sr-only">Filter by assignee</span>
+                <select id="assignee-filter"><option value="all">All teammates</option></select>
+              </label>
+              <label class="blocked-toggle">
+                <input id="blocked-filter" type="checkbox">
+                <span class="toggle-track" aria-hidden="true"><i></i></span>
+                <span>Blocked only</span>
+              </label>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Issue</th><th scope="col">Assignee</th><th scope="col">Status</th><th scope="col">Priority</th><th scope="col" class="points-column">Points</th></tr></thead>
+              <tbody id="issue-rows"></tbody>
+            </table>
+            <div id="empty-issues" class="empty-state" hidden>No issues match these filters.</div>
+          </div>
+          <div class="table-footer"><span>Showing <strong id="showing-count">16</strong> of <strong id="table-total">16</strong> issues</span><span class="source-note"><i></i> Sample sprint data</span></div>
+        </section>
+
+        <footer class="page-footer"><span>SPRINT PULSE <span class="footer-dot">/</span> Team delivery overview</span><span>Last updated <strong id="updated-label">Sep 28, 2026</strong></span></footer>
+      </main>
+    </div>
+  </body>
+</html>

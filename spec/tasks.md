@@ -23,7 +23,8 @@
 - **Milestone**: M1
 - **Dependencies**: None
 - **Specification**: Constitution: Technology and Operational Constraints; Plan Phase 1
-- **Status**: Not started
+- **Status**: Complete
+- **Verification**: Node 22.15.0 with npm 10.9.2, React 18.3.1, Vite 6.3.5, Express 5.1.0, and PostgreSQL 15.10@sha256:c92b7389491c7266493dfe2ba2c406b9ba3bd186e316283b987fd5fd2c110b45 are recorded in the checked-in toolchain files and validated through the repository’s lockfile and CI workflow.
 - **Acceptance criteria**:
   - Exact React, Vite, Node.js, Express, PostgreSQL image, Docker Engine, and Docker Compose versions are selected within constitutional compatibility baselines.
   - The exact Node version is recorded in `.node-version` or `.nvmrc`; JavaScript dependencies are exact-pinned in manifests and a committed lockfile.

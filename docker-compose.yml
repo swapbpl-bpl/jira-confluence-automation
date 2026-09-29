@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:15.10@sha256:c92b7389491c7266493dfe2ba2c406b9ba3bd186e316283b987fd5fd2c110b45
+    container_name: staff-augmentation-postgres
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_DB: staff_augmentation
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  postgres_data:

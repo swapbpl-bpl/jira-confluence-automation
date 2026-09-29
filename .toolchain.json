@@ -1,0 +1,14 @@
+{
+  "node": "22.15.0",
+  "npm": "10.9.2",
+  "react": "18.3.1",
+  "vite": "6.3.5",
+  "pluginReact": "5.1.4",
+  "express": "5.1.0",
+  "typescript": "5.7.3",
+  "postgres": {
+    "image": "postgres:15.10@sha256:c92b7389491c7266493dfe2ba2c406b9ba3bd186e316283b987fd5fd2c110b45",
+    "engine": "27.2.1",
+    "compose": "2.29.1"
+  }
+}
