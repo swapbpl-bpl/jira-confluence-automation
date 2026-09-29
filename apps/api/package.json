@@ -10,7 +10,8 @@
     "check:toolchain": "node -p \"process.versions.node\"",
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test": "tsx --test ../tests/**/*.test.ts"
   },
   "dependencies": {
     "express": "5.1.0"

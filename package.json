@@ -15,6 +15,7 @@
     "dev:api": "npm --prefix apps/api run dev",
     "dev:web": "npm --prefix apps/web run dev",
     "build:web": "npm --prefix apps/web run build",
-    "build:api": "npm --prefix apps/api run build"
+    "build:api": "npm --prefix apps/api run build",
+    "test": "tsx --test tests/**/*.test.ts"
   }
 }
